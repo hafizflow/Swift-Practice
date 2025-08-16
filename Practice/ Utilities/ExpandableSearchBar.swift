@@ -8,11 +8,40 @@
 import SwiftUI
 
 struct ExpandableSearchBar: View {
+    @State var searchText: String = ""
+    @State var isSearching: Bool = false
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack {
+            if isSearching {
+                TextField("Section (61_N)", text: $searchText)
+                    .padding(24)
+            }
+            
+            HStack {
+                Spacer()
+                Capsule()
+                    .stroke(lineWidth: 1)
+                    .foregroundStyle(.gray)
+                    .frame(maxWidth: isSearching ? .infinity : 50, maxHeight: 50)
+                    .overlay(alignment: .trailing) {
+                        Button {
+                            withAnimation {
+                                isSearching.toggle()
+                            }
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                                .tint(.secondary)
+                                .padding()
+                            
+                        }
+                    }
+            }
+        }
     }
 }
 
 #Preview {
     ExpandableSearchBar()
+        .padding(.horizontal, 16)
 }

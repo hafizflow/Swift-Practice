@@ -7,12 +7,30 @@
 
 import SwiftUI
 
-struct Tab: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+enum Tab: String, CaseIterable {
+    case student = "graduationcap"
+    case teacher = "person.crop.rectangle"
+    case teacherInfo = "person.text.rectangle"
+    case emptyRoom = "square.stack"
+    
+    var title: String {
+        switch self {
+            case .student:
+                return "Student"
+            case .teacher:
+                return "Teacher"
+            case .teacherInfo:
+                return "Teacher Info"
+            case .emptyRoom:
+                return "Empty Room"
+        }
     }
 }
 
-#Preview {
-    Tab()
+
+// Animated SF Tab Model
+struct AnimatedTab: Identifiable {
+    var id: UUID = .init()
+    var tab: Tab
+    var isAnimating: Bool?
 }
