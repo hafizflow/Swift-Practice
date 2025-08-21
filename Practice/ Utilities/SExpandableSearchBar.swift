@@ -1,12 +1,6 @@
-//
-//  ExpandableSearchBar.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 16/8/25.
-//
 import SwiftUI
 
-struct ExpandableSearchBar: View {
+struct SExpandableSearchBar: View {
     @State var searchText: String = ""
     @Binding var isSearching: Bool
     
@@ -36,7 +30,7 @@ struct ExpandableSearchBar: View {
                     }
                     .offset(x: -60)
                 }
-
+                
             }
             
             HStack (spacing: 0) {
@@ -67,6 +61,6 @@ struct ExpandableSearchBar: View {
 
 
 #Preview {
-    ExpandableSearchBar(isSearching: .constant(false))
+    SExpandableSearchBar(isSearching: .constant(false))
         .padding(.horizontal, 16)
 }

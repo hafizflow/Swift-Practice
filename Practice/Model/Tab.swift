@@ -9,7 +9,7 @@ import SwiftUI
 
 enum Tab: String, CaseIterable {
     case student = "graduationcap"
-    case teacher = "person.crop.rectangle"
+    case teacher = "person.crop.rectangle.stack"
     case emptyRoom = "square.stack"
     case examRoutine = "list.clipboard"
     

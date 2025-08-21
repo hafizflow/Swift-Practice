@@ -1,17 +1,24 @@
+//
+//  Teacher.swift
+//  Practice
+//
+//  Created by Hafizur Rahman on 21/8/25.
+//
+
 import SwiftUI
 
 
-struct Student: View {
-    // View Properties
+struct Teacher: View {
+        // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
+    @State private var isStudent: Bool = false
     @State private var selectedDate: Date?
-    // For Matched Geometry Effect
+        // For Matched Geometry Effect
     @Namespace private var namespace
-    @State private var activeTab: StudentTab = .routine
+    @State private var activeTab: TeacherTab = .routine
     var offSetObserve = PageOffsetObserver()
-    @Binding var showAlert: Bool
-    @State private var isStudent: Bool = true
-
+    @State private var showAlert: Bool = false
+    
     
     var body: some View {
         VStack(alignment: .center, spacing: 0){
@@ -20,38 +27,38 @@ struct Student: View {
             
             TabView(selection: $activeTab) {
                 
-                RoutineView(isStudent: $isStudent, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
+                RoutineView(isStudent: $isStudent,currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
                 .onAppear {
-                    // Setting up initial Selection Date
+                        // Setting up initial Selection Date
                     guard selectedDate == nil else { return }
-                    // Today's Data
+                        // Today's Data
                     selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
                 }
-                .tag(StudentTab.routine)
+                .tag(TeacherTab.routine)
                 
-               
+                
                 ScrollView(.vertical) {
                     InsightCard().padding(15)
                 }
-                .tag(StudentTab.insights)
-
+                .tag(TeacherTab.insights)
+                
                 
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .background(.testBg)
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
             .ignoresSafeArea(.all, edges: .bottom)
-
+            
         }
         .background(.mainBackground)
         
     }
     
     @ViewBuilder
-    func Tabbar(_ tint: Color, _ weight: Font.Weight = .regular, activeTab: Binding<StudentTab>) -> some View {
+    func Tabbar(_ tint: Color, _ weight: Font.Weight = .regular, activeTab: Binding<TeacherTab>) -> some View {
         VStack(alignment: .center, spacing: 0) {
             HStack {
-                ForEach(StudentTab.allCases, id: \.rawValue) { tab in
+                ForEach(TeacherTab.allCases, id: \.rawValue) { tab in
                     Text(tab.rawValue)
                         .font(.system(size: 14))
                         .fontWeight(weight)
@@ -66,9 +73,9 @@ struct Student: View {
                 }
             }
             
-            // Underline for the active tab
+                // Underline for the active tab
             GeometryReader { geometry in
-                let tabWidth = geometry.size.width / CGFloat(StudentTab.allCases.count)
+                let tabWidth = geometry.size.width / CGFloat(TeacherTab.allCases.count)
                 let offsetX = CGFloat(activeTab.wrappedValue.index) * tabWidth
                 
                 Rectangle()
@@ -78,7 +85,8 @@ struct Student: View {
                     .offset(x: offsetX)
                     .frame(width: tabWidth)
                     .animation(.snappy(duration: 0.3, extraBounce: 0), value: activeTab.wrappedValue)
-            }        }
+            }
+        }
     }
     
     
@@ -87,7 +95,7 @@ struct Student: View {
     func HeaderView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Student")
+                Text("Teacher")
                     .font(.title.bold())
                     .opacity(0.8)
                 
@@ -104,7 +112,7 @@ struct Student: View {
                 }
             }
             
-            // Week View
+                // Week View
             HStack(spacing: 0) {
                 ForEach(currentWeek) { day in
                     let date = day.date
@@ -168,69 +176,7 @@ struct Student: View {
 
 
 #Preview {
-    Student(showAlert: .constant(false))
+    Teacher()
 }
 
 
-
-@Observable
-class PageOffsetObserver: NSObject {
-    var collectionView: UICollectionView?
-    var offset: CGPoint = .zero
-    private(set) var isObserving: Bool = false
-    
-    deinit {
-        remove()
-    }
-    
-    func ovserve() {
-        // Safe method
-        guard !isObserving else { return }
-        collectionView?.addObserver(self, forKeyPath: "contentOffset", context: nil)
-        isObserving = true
-    }
-    
-    func remove() {
-        isObserving = false
-        collectionView?.removeObserver(self, forKeyPath: "contentOffset")
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard keyPath == "contentOffset" else { return }
-        
-        if let contentOffset = (object as? UICollectionView)?.contentOffset {
-            offset = contentOffset
-        }
-    }
-}
-
-
-struct FindCollectionView: UIViewRepresentable {
-    var result: (UICollectionView) -> ()
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            if let collectionView = view.collectionSuperview {
-                print(collectionView)
-            }
-        }
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-            // Update logic if needed
-    }
-}
-
-extension UIView {
-    // Finding the CollectionView by traversing the superview
-    var collectionSuperview: UICollectionView? {
-        if let collectionView = superview as? UICollectionView {
-            return collectionView
-        }
-        return superview?.collectionSuperview
-    }
-}

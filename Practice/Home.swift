@@ -7,8 +7,13 @@
 
 import SwiftUI
 
+
 struct Home: View {
     @State private var activeTab: Tab = .student
+    @State private var showAlert: Bool = false
+    @State private var isSearchingS: Bool = false
+    @State private var isSearchingT: Bool = false
+
     
     @State private var allTabs: [AnimatedTab] = Tab.allCases.compactMap { tab ->
         AnimatedTab? in
@@ -21,23 +26,27 @@ struct Home: View {
                 
                 NavigationStack {
                     VStack {
-                        Student()
+                        Student(showAlert: $showAlert)
                     }
                 }
                 .setUpTab(.student)
                 .overlay(alignment: .bottomTrailing) {
-                    ExpandableSearchBar()
+                    SExpandableSearchBar(isSearching: $isSearchingS)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 5)
                 }
                 
                 NavigationStack {
                     VStack {
-                        
+                        Teacher()
                     }
-                    .navigationTitle(Tab.teacher.title)
                 }
                 .setUpTab(.teacher)
+                .overlay(alignment: .bottomTrailing) {
+                    TExpandableSearchBar(isSearching: $isSearchingT)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 5)
+                }
     
                 
                 NavigationStack {
@@ -57,9 +66,9 @@ struct Home: View {
                 .setUpTab(.examRoutine)
                 
             }
-            
             CustomTabBar()
         }
+        .customAlert(isPresented: $showAlert)
     }
     
     

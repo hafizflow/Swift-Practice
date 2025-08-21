@@ -113,7 +113,7 @@ struct InsightCard: View {
                 // Download PDF
                 ZStack {
                     Button(action: {
-                        print("Download PDF tapped")
+                        // Download Code
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 15)

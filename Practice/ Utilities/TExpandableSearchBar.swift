@@ -1,12 +1,12 @@
-//
-//  ExpandableSearchBar.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 16/8/25.
-//
+    //
+    //  ExpandableSearchBar.swift
+    //  Practice
+    //
+    //  Created by Hafizur Rahman on 16/8/25.
+    //
 import SwiftUI
 
-struct ExpandableSearchBar: View {
+struct TExpandableSearchBar: View {
     @State var searchText: String = ""
     @Binding var isSearching: Bool
     
@@ -14,7 +14,7 @@ struct ExpandableSearchBar: View {
         ZStack {
             if isSearching {
                 HStack(spacing: 0) {
-                    TextField("Section (61_N)", text: $searchText)
+                    TextField("Teacher Initial (MJZ)", text: $searchText)
                         .foregroundStyle(.white.opacity(0.9))
                         .padding(.horizontal, 24)
                     
@@ -36,7 +36,7 @@ struct ExpandableSearchBar: View {
                     }
                     .offset(x: -60)
                 }
-
+                
             }
             
             HStack (spacing: 0) {
@@ -67,6 +67,7 @@ struct ExpandableSearchBar: View {
 
 
 #Preview {
-    ExpandableSearchBar(isSearching: .constant(false))
+    TExpandableSearchBar(isSearching: .constant(false))
         .padding(.horizontal, 16)
 }
+

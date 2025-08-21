@@ -1,8 +1,16 @@
+//
+//  TClassCard.swift
+//  Practice
+//
+//  Created by Hafizur Rahman on 21/8/25.
+//
+
 import SwiftUI
 import Lottie
 
-struct ClassCard: View {
+struct TClassCard: View {
     var isEmpty: Bool = false
+    
     var body: some View {
         Group {
             if isEmpty {
@@ -36,8 +44,7 @@ struct ClassCard: View {
                             .foregroundStyle(.gray)
                     }
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        Text("Data Structure (CSE333)")
+                        Text("Computer Architecture and Oraganization")
                             .font(.system(size: 20))
                             .fontWeight(.bold)
                             .foregroundStyle(.white.opacity(0.9))
@@ -45,7 +52,6 @@ struct ClassCard: View {
                             .lineLimit(1)
                             .brightness(-0.2)
                         
-                    }
                     
                     
                     HStack {
@@ -64,16 +70,16 @@ struct ClassCard: View {
                         Spacer()
                         
                         HStack(alignment: .center, spacing: 20) {
-                            Text("Teacher:")
+                            Text("Course:")
                                 .font(.system(size: 16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            Text("MMA")
+                            
+                            Text("CSE333")
                                 .font(.system(size: 16))
                                 .fontWeight(.bold)
-                                .foregroundStyle(.teal)
-                                .brightness(-0.2)
+                                .foregroundStyle(.white.opacity(0.8))
                         }
                     }
                     
@@ -102,6 +108,6 @@ struct ClassCard: View {
 }
 
 #Preview {
-    ClassCard()
+    TClassCard()
         .padding(.horizontal, 16)
 }
