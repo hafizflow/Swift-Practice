@@ -10,6 +10,7 @@ struct ClassCard: View {
                     LottieAnimation(animationName: "sloth.json")
                         .frame(width: .infinity, height: 200)
                     Text("Looks like you've got a free day!")
+                        .foregroundStyle(.white.opacity(0.9))
                         .padding(.horizontal, 16)
                     Text("Take it easy and explore new opportunities!")
                         .font(.caption2)
@@ -22,12 +23,14 @@ struct ClassCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
                         Text("08:30 - 10:00")
-                            .font(.system(size: 18))
-                            .fontWeight(.semibold)
+                            .font(.system(size: 20))
+                            .fontWeight(.bold)
+                            .foregroundStyle(.teal.opacity(0.9))
+                            .brightness(-0.2)
                         
                         Spacer()
                         
-                        Text("(1 hour 30 mins)")
+                        Text("1 hour 30 mins")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
@@ -37,10 +40,11 @@ struct ClassCard: View {
                         Text("Data Structure (CSE333)")
                             .font(.system(size: 20))
                             .fontWeight(.bold)
-                            .foregroundStyle(.blue)
-                            .brightness(-0.2)
-                            .padding([.top, .bottom], 8)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding([.top, .bottom], 6)
                             .lineLimit(1)
+                            .brightness(-0.2)
+                        
                     }
                     
                     
@@ -54,6 +58,7 @@ struct ClassCard: View {
                             Text("61_N")
                                 .font(.system(size: 16))
                                 .fontWeight(.semibold)
+                                .foregroundStyle(.white.opacity(0.8))
                         }
                         
                         Spacer()
@@ -67,7 +72,7 @@ struct ClassCard: View {
                             Text("MMA")
                                 .font(.system(size: 16))
                                 .fontWeight(.bold)
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.teal)
                                 .brightness(-0.2)
                         }
                     }
@@ -81,6 +86,7 @@ struct ClassCard: View {
                         Text("KT-503 (COM LAB)")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
+                            .foregroundStyle(.white.opacity(0.8))
                     }
                 }
                 .lineLimit(1)
@@ -89,8 +95,8 @@ struct ClassCard: View {
         }
         .background {
             RoundedRectangle(cornerRadius: 15)
-                .fill(.background)
-                .shadow(color: .black.opacity(0.55), radius: 2)
+                .fill(.testBg)
+                .shadow(color: .gray.opacity(0.75), radius: 2)
         }
     }
 }

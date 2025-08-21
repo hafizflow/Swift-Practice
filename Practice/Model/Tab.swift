@@ -10,8 +10,8 @@ import SwiftUI
 enum Tab: String, CaseIterable {
     case student = "graduationcap"
     case teacher = "person.crop.rectangle"
-    case teacherInfo = "person.text.rectangle"
     case emptyRoom = "square.stack"
+    case examRoutine = "list.clipboard"
     
     var title: String {
         switch self {
@@ -19,10 +19,10 @@ enum Tab: String, CaseIterable {
                 return "Student"
             case .teacher:
                 return "Teacher"
-            case .teacherInfo:
-                return "Teacher Info"
             case .emptyRoom:
-                return "Empty Room"
+                return "EmptyRoom"
+            case .examRoutine:
+                return "ExamRoutine"
         }
     }
 }

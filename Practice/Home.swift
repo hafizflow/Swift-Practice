@@ -25,6 +25,11 @@ struct Home: View {
                     }
                 }
                 .setUpTab(.student)
+                .overlay(alignment: .bottomTrailing) {
+                    ExpandableSearchBar()
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 5)
+                }
                 
                 NavigationStack {
                     VStack {
@@ -33,14 +38,7 @@ struct Home: View {
                     .navigationTitle(Tab.teacher.title)
                 }
                 .setUpTab(.teacher)
-                
-                NavigationStack {
-                    VStack {
-                        
-                    }
-                    .navigationTitle(Tab.teacherInfo.title)
-                }
-                .setUpTab(.teacherInfo)
+    
                 
                 NavigationStack {
                     VStack {
@@ -49,6 +47,14 @@ struct Home: View {
                     .navigationTitle(Tab.emptyRoom.title)
                 }
                 .setUpTab(.emptyRoom)
+                
+                NavigationStack {
+                    VStack {
+                        
+                    }
+                    .navigationTitle(Tab.examRoutine.title)
+                }
+                .setUpTab(.examRoutine)
                 
             }
             
@@ -74,7 +80,7 @@ struct Home: View {
                         .textScale(.secondary)
                 }
                 .frame(maxWidth: .infinity)
-                .foregroundStyle(activeTab == tab ? Color.primary : Color.gray)
+                .foregroundStyle(activeTab == tab ? Color.teal.opacity(0.8) : Color.gray)
                 .padding(.top, 15)
                 .padding(.bottom, 10)
                 .contentShape(.rect)
@@ -93,7 +99,7 @@ struct Home: View {
                 }
             }
         }
-//        .background(.bar)
+        .background(.testBg)
     }
     
 }
