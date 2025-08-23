@@ -1,13 +1,6 @@
-//
-//  InsightCard.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 21/8/25.
-//
-
 import SwiftUI
 
-struct InsightCard: View {
+struct SInsightCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Enrolled Course")
@@ -62,11 +55,11 @@ struct InsightCard: View {
                 .padding(.bottom, 16)
             
             
-            // Grid
+                // Grid
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
                 
                 
-                // Total Course Enrolled
+                    // Total Course Enrolled
                 ZStack {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(.testBg)
@@ -88,7 +81,7 @@ struct InsightCard: View {
                 }
                 
                 
-                // Total weekly class
+                    // Total weekly class
                 ZStack {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(.testBg)
@@ -97,23 +90,23 @@ struct InsightCard: View {
                             RoundedRectangle(cornerRadius: 15)
                                 .stroke(.gray.opacity(0.45), lineWidth: 1)
                         )
-
-                        Text("Total Weekly Class: 5")
-                            .lineLimit(2)
-                            .multilineTextAlignment(.center)
-                            .font(.system(size: 12))
-                            .foregroundStyle(.white.opacity(0.8))
-                            .fontWeight(.bold)
-                            .font(.headline)
-                            .padding(.horizontal, 8)
-                            .lineSpacing(4)
+                    
+                    Text("Total Weekly Class: 5")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .fontWeight(.bold)
+                        .font(.headline)
+                        .padding(.horizontal, 8)
+                        .lineSpacing(4)
                 }
                 
                 
-                // Download PDF
+                    // Download PDF
                 ZStack {
                     Button(action: {
-                        // Download Code
+                            // Download Code
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 15)
@@ -131,14 +124,14 @@ struct InsightCard: View {
                                 .foregroundStyle(.white.opacity(0.8))
                                 .fontWeight(.bold)
                                 .font(.headline)
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 15)
                                 .lineSpacing(4)
                         }
                     }
                 }
             }
             
-
+            
         }
         .lineLimit(1)
         .padding(15)
@@ -152,5 +145,5 @@ struct InsightCard: View {
 
 
 #Preview {
-    InsightCard()
+    SInsightCard()
 }

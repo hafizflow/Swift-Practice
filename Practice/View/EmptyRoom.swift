@@ -1,6 +1,13 @@
+//
+//  EmptyRoom.swift
+//  Practice
+//
+//  Created by Hafizur Rahman on 24/8/25.
+//
+
 import SwiftUI
 
-struct Student: View {
+struct EmptyRoom: View {
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var selectedDate: Date?
@@ -10,7 +17,6 @@ struct Student: View {
     var offSetObserve = PageOffsetObserver()
     @Binding var showAlert: Bool
     @State private var isStudent: Bool = true
-    
     
     var body: some View {
         VStack(alignment: .center, spacing: 0){
@@ -25,68 +31,22 @@ struct Student: View {
                             // Today's Data
                         selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
                     }
-                    .tag(StudentTab.routine)
-                
-                
-                ScrollView(.vertical) {
-                    SInsightCard().padding(15)
-                }
-                .tag(StudentTab.insights)
-                
-                
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .background(.testBg)
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
-//            .ignoresSafeArea(.container, edges: .bottom)
+                //            .ignoresSafeArea(.container, edges: .bottom)
         }
         .background(.mainBackground)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        
     }
-    
-    @ViewBuilder
-    func Tabbar(_ tint: Color, _ weight: Font.Weight = .regular, activeTab: Binding<StudentTab>) -> some View {
-        VStack(alignment: .center, spacing: 0) {
-            HStack {
-                ForEach(StudentTab.allCases, id: \.rawValue) { tab in
-                    Text(tab.rawValue)
-                        .font(.system(size: 14))
-                        .fontWeight(weight)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                        .contentShape(.rect)
-                        .onTapGesture {
-                            withAnimation(.snappy(duration: 0.3, extraBounce: 0)) {
-                                activeTab.wrappedValue = tab
-                            }
-                        }
-                }
-            }
-            
-                // Underline for the active tab
-            GeometryReader { geometry in
-                let tabWidth = geometry.size.width / CGFloat(StudentTab.allCases.count)
-                let offsetX = CGFloat(activeTab.wrappedValue.index) * tabWidth
-                
-                Rectangle()
-                    .cornerRadius(30)
-                    .frame(height: 3)
-                    .foregroundColor(tint)
-                    .offset(x: offsetX)
-                    .frame(width: tabWidth)
-                    .animation(.snappy(duration: 0.3, extraBounce: 0), value: activeTab.wrappedValue)
-            }
-        }
-    }
-    
     
     
     @ViewBuilder
     func HeaderView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Student")
+                Text("EmptyRoom")
                     .font(.title.bold())
                     .opacity(0.8)
                 
@@ -145,16 +105,7 @@ struct Student: View {
             
             HStack (alignment: .center) {
                 Text(selectedDate?.string("MMM") ?? "")
-                
                 Spacer()
-                
-                Tabbar(.gray, .semibold, activeTab: $activeTab)
-                    .frame(maxHeight: 24)
-                    .padding(.horizontal, 40)
-                    .foregroundStyle(.white.opacity(0.9))
-                
-                Spacer()
-                
                 Text(selectedDate?.string("YYY") ?? "")
             }
             .font(.caption2)
@@ -166,66 +117,5 @@ struct Student: View {
 }
 
 #Preview {
-    Student(showAlert: .constant(false))
-}
-
-@Observable
-class PageOffsetObserver: NSObject {
-    var collectionView: UICollectionView?
-    var offset: CGPoint = .zero
-    private(set) var isObserving: Bool = false
-    
-    deinit {
-        remove()
-    }
-    
-    func ovserve() {
-            // Safe method
-        guard !isObserving else { return }
-        collectionView?.addObserver(self, forKeyPath: "contentOffset", context: nil)
-        isObserving = true
-    }
-    
-    func remove() {
-        isObserving = false
-        collectionView?.removeObserver(self, forKeyPath: "contentOffset")
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard keyPath == "contentOffset" else { return }
-        
-        if let contentOffset = (object as? UICollectionView)?.contentOffset {
-            offset = contentOffset
-        }
-    }
-}
-
-struct FindCollectionView: UIViewRepresentable {
-    var result: (UICollectionView) -> ()
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            if let collectionView = view.collectionSuperview {
-                print(collectionView)
-            }
-        }
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-            // Update logic if needed
-    }
-}
-
-extension UIView {
-        // Finding the CollectionView by traversing the superview
-    var collectionSuperview: UICollectionView? {
-        if let collectionView = superview as? UICollectionView {
-            return collectionView
-        }
-        return superview?.collectionSuperview
-    }
+    EmptyRoom(showAlert: .constant(false))
 }

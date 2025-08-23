@@ -38,7 +38,7 @@ struct Teacher: View {
                 
                 
                 ScrollView(.vertical) {
-                    InsightCard().padding(15)
+                    TInsightCard().padding(15)
                 }
                 .tag(TeacherTab.insights)
                 

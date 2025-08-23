@@ -1,19 +1,11 @@
-//
-//  Home.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 15/8/25.
-//
-
 import SwiftUI
-
 
 struct Home: View {
     @State private var activeTab: Tab = .student
     @State private var showAlert: Bool = false
     @State private var isSearchingS: Bool = false
     @State private var isSearchingT: Bool = false
-
+    
     
     @State private var allTabs: [AnimatedTab] = Tab.allCases.compactMap { tab ->
         AnimatedTab? in
@@ -23,37 +15,20 @@ struct Home: View {
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $activeTab) {
-                
                 NavigationStack {
-                    VStack {
-                        Student(showAlert: $showAlert)
-                    }
+                    Student(showAlert: $showAlert)
                 }
                 .setUpTab(.student)
-                .overlay(alignment: .bottomTrailing) {
-                    SExpandableSearchBar(isSearching: $isSearchingS)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 5)
-                }
+                
                 
                 NavigationStack {
-                    VStack {
-                        Teacher()
-                    }
+                    Teacher()
                 }
                 .setUpTab(.teacher)
-                .overlay(alignment: .bottomTrailing) {
-                    TExpandableSearchBar(isSearching: $isSearchingT)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 5)
-                }
-    
+                
                 
                 NavigationStack {
-                    VStack {
-                        
-                    }
-                    .navigationTitle(Tab.emptyRoom.title)
+                    EmptyRoom(showAlert: $showAlert)
                 }
                 .setUpTab(.emptyRoom)
                 
@@ -64,15 +39,35 @@ struct Home: View {
                     .navigationTitle(Tab.examRoutine.title)
                 }
                 .setUpTab(.examRoutine)
-                
             }
             CustomTabBar()
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if activeTab == .student {
+                SExpandableSearchBar(isSearching: $isSearchingS)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 75)
+                    .id("student")
+                    .zIndex(999)
+            } else if activeTab == .teacher {
+                TExpandableSearchBar(isSearching: $isSearchingT)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 75)
+                    .id("teacher")
+                    .zIndex(999)
+            } else if activeTab == .emptyRoom {
+                TimeChangeButton()
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 75)
+                    .id("emptyRoom")
+                    .zIndex(999)
+            }
         }
         .customAlert(isPresented: $showAlert)
     }
     
     
-    // Custom Tab Bar
+        // Custom Tab Bar
     @ViewBuilder
     func CustomTabBar() -> some View {
         HStack(spacing: 0) {
@@ -123,8 +118,6 @@ extension View {
     }
 }
 
-
 #Preview {
     Home()
 }
-
