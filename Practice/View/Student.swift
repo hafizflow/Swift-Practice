@@ -18,26 +18,34 @@ struct Student: View {
                 .environment(\.colorScheme, .dark)
             
             TabView(selection: $activeTab) {
-                RoutineView(isStudent: $isStudent, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
+                    RoutineView(isStudent: $isStudent,
+                                currentWeek: $currentWeek,
+                                selectedDate: $selectedDate,
+                                showAlert: $showAlert
+                    )
                     .onAppear {
-                            // Setting up initial Selection Date
+                        // Setting up initial Selection Date
                         guard selectedDate == nil else { return }
-                            // Today's Data
+                        // Today's Data
                         selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
-                    }
-                    .tag(StudentTab.routine)
+                    }.tag(StudentTab.routine)
+                
                 
                 
                 ScrollView(.vertical) {
-                    SInsightCard().padding(15)
+                    SInsightCard().padding(20)
                 }
                 .tag(StudentTab.insights)
-                
-                
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .background(.testBg)
-            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
+            .clipShape(UnevenRoundedRectangle(
+                topLeadingRadius: 30,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 30,
+                style: .continuous)
+            )
 //            .ignoresSafeArea(.container, edges: .bottom)
         }
         .background(.mainBackground)
