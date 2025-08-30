@@ -33,6 +33,8 @@ struct SClassCard: View {
                         Spacer()
                         
                         Text("1 hour 30 mins")
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
@@ -92,6 +94,7 @@ struct SClassCard: View {
                             .foregroundStyle(.gray)
                         
                         Text("KT-503 (COM LAB)")
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))

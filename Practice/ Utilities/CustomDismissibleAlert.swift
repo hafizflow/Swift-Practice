@@ -72,17 +72,10 @@ struct CustomDismissibleAlert: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            Text(contact.phone)
+                            Link(contact.phone, destination: URL(string: "tel:\(contact.phone)")!)
                                 .font(.system(size: 16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.teal.opacity(0.8))
-                                .environment(\.openURL, OpenURLAction { url in
-                                    if url.scheme == "tel" {
-                                        UIApplication.shared.open(url)
-                                        return .handled
-                                    }
-                                    return .discarded
-                                })
                             
                             Spacer()
                             
@@ -90,12 +83,16 @@ struct CustomDismissibleAlert: View {
                             Button(action: {
                                     // Copy cell number to clipboard
                                 UIPasteboard.general.string = contact.phone
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                impactFeedback.impactOccurred()
                             }) {
                                     // SF Symbol for copy button
                                 Image(systemName: "square.on.square")
                                     .foregroundColor(.teal.opacity(0.9))
                                     .font(.system(size: 16))
                             }
+                            
+                            
                         }
                         
                         
@@ -118,6 +115,8 @@ struct CustomDismissibleAlert: View {
                             Button(action: {
                                     // Copy email address to clipboard
                                 UIPasteboard.general.string = contact.email
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                impactFeedback.impactOccurred()
                             }) {
                                     // SF Symbol for copy button
                                 Image(systemName: "square.on.square")

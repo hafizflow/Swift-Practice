@@ -66,8 +66,6 @@ struct Student: View {
                         selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
                     }.tag(StudentTab.routine)
                     
-                    
-                    
                     ScrollView(.vertical) {
                         SInsightCard().padding(20)
                     }
