@@ -2,14 +2,14 @@ import SwiftUI
 import Lottie
 
 struct SClassCard: View {
-    var isEmpty: Bool = true
+    var isEmpty: Bool = false
     @Binding var showAlert: Bool
     
     var body: some View {
         Group {
             if isEmpty {
                 VStack(alignment: .center, spacing: 4) {
-                    LottieAnimation(animationName: "sloth.json")
+                    LottieAnimation(animationName: "yogi.json")
                         .frame(maxWidth: .infinity, maxHeight: 250)
                     Text("Looks like you've got a free day!")
                         .foregroundStyle(.white.opacity(0.9))

@@ -143,7 +143,6 @@ struct Student: View {
     }
     
     
-    
     @ViewBuilder
     func HeaderView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -165,9 +164,9 @@ struct Student: View {
                 }
             }
             
-                // Week View
+                // Week View (excluding Friday)
             HStack(spacing: 0) {
-                ForEach(currentWeek) { day in
+                ForEach(currentWeek.filter { Calendar.current.component(.weekday, from: $0.date) != 6 }) { day in
                     let date = day.date
                     let isSameDate = date.isSame(selectedDate)
                     
@@ -198,7 +197,6 @@ struct Student: View {
                         }
                     }
                 }
-                
             }
             .animation(.snappy(duration: 0.25, extraBounce: 0), value: selectedDate)
             .frame(height: 80)
@@ -220,7 +218,6 @@ struct Student: View {
                 Text(selectedDate?.string("YYY") ?? "")
             }
             .font(.caption2)
-            
         }
         .padding([.horizontal, .top], 15)
         .padding(.bottom, 10)

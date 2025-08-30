@@ -164,7 +164,7 @@ struct Teacher: View {
             
                 // Week View
             HStack(spacing: 0) {
-                ForEach(currentWeek) { day in
+                ForEach(currentWeek.filter { Calendar.current.component(.weekday, from: $0.date) != 6 }) { day in
                     let date = day.date
                     let isSameDate = date.isSame(selectedDate)
                     
@@ -195,12 +195,12 @@ struct Teacher: View {
                         }
                     }
                 }
-                
             }
             .animation(.snappy(duration: 0.25, extraBounce: 0), value: selectedDate)
             .frame(height: 80)
             .padding(.vertical, 5)
             .offset(y: 5)
+            
             
             HStack (alignment: .center) {
                 Text(selectedDate?.string("MMM") ?? "")
