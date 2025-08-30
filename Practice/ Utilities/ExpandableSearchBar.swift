@@ -1,14 +1,9 @@
-//
-//  ExpandableSearchBar.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 16/8/25.
-//
 import SwiftUI
 
 struct ExpandableSearchBar: View {
     @State var searchText: String = ""
     @Binding var isSearching: Bool
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         ZStack {
@@ -17,6 +12,7 @@ struct ExpandableSearchBar: View {
                     TextField("Section (61_N)", text: $searchText)
                         .foregroundStyle(.white.opacity(0.9))
                         .padding(.horizontal, 24)
+                        .focused($isTextFieldFocused)
                     
                     Spacer()
                     
@@ -36,7 +32,7 @@ struct ExpandableSearchBar: View {
                     }
                     .offset(x: -60)
                 }
-
+                
             }
             
             HStack (spacing: 0) {
@@ -61,10 +57,19 @@ struct ExpandableSearchBar: View {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.mainBackground)
         }
-        .animation(.easeInOut(duration: 0.3), value: isSearching)
+        .animation(.easeInOut(duration: 0.4), value: isSearching)
+        .onChange(of: isSearching) { _, newValue in
+            if newValue {
+                    // Small delay to ensure the animation completes before focusing
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    isTextFieldFocused = true
+                }
+            } else {
+                isTextFieldFocused = false
+            }
+        }
     }
 }
-
 
 #Preview {
     ExpandableSearchBar(isSearching: .constant(false))

@@ -5,6 +5,8 @@ struct Home: View {
     @State private var showAlert: Bool = false
     @State private var isSearchingS: Bool = false
     @State private var isSearchingT: Bool = false
+    @State private var isSearchingEmpty: Bool = false
+    @State private var isSearchingExam: Bool = false
     
     
     @State private var allTabs: [AnimatedTab] = Tab.allCases.compactMap { tab ->
@@ -15,70 +17,24 @@ struct Home: View {
     var body: some View {
         VStack(spacing: 0) {
             TabView(selection: $activeTab) {
-                NavigationStack {Student(showAlert: $showAlert)}.setUpTab(.student)
+                NavigationStack {
+                    Student(showAlert: $showAlert, isSearching: $isSearchingS)
+                }.setUpTab(.student)
 
-                NavigationStack {Teacher()}.setUpTab(.teacher)
-                
-                NavigationStack {EmptyRoom(showAlert: $showAlert)}.setUpTab(.emptyRoom)
+                NavigationStack {
+                    Teacher(isSearching: $isSearchingT)
+                }.setUpTab(.teacher)
                 
                 NavigationStack {
-                    VStack {
-                        
-                    }
-                    .navigationTitle(Tab.examRoutine.title)
+                    EmptyRoom(isSearching: $isSearchingEmpty)
+                }.setUpTab(.emptyRoom)
+                
+                NavigationStack {
+                    ExamRoutine(showAlert: $showAlert, isSearching: $isSearchingExam)
                 }
                 .setUpTab(.examRoutine)
             }
             CustomTabBar()
-        }
-        .overlay(alignment: .bottomTrailing) {
-            ZStack (alignment: .bottomTrailing) {
-                    // Student tab
-                if activeTab == .student {
-                    if isSearchingS {
-                            // Fullscreen invisible layer
-                        Color.black.opacity(0.001)
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                isSearchingS = false
-                            }
-                            .zIndex(1) // keep it below the search bar
-                    }
-                    
-                    SExpandableSearchBar(isSearching: $isSearchingS)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 75)
-                        .id("student")
-                        .zIndex(2) // above the transparent layer
-                }
-                
-                    // Teacher tab
-                else if activeTab == .teacher {
-                    if isSearchingT {
-                        Color.black.opacity(0.001)
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                isSearchingT = false
-                            }
-                            .zIndex(1)
-                    }
-                    
-                    TExpandableSearchBar(isSearching: $isSearchingT)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 75)
-                        .id("teacher")
-                        .zIndex(2)
-                }
-                
-                    // Empty Room tab
-                else if activeTab == .emptyRoom {
-                    TimeChangeButton()
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 75)
-                        .id("emptyRoom")
-                        .zIndex(2)
-                }
-            }
         }
         .customAlert(isPresented: $showAlert)
     }

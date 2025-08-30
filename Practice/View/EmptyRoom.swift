@@ -8,34 +8,37 @@
 import SwiftUI
 
 struct EmptyRoom: View {
+    @Binding var isSearching: Bool
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var selectedDate: Date?
         // For Matched Geometry Effect
     @Namespace private var namespace
     @State private var activeTab: StudentTab = .routine
-    var offSetObserve = PageOffsetObserver()
-    @Binding var showAlert: Bool
-    @State private var isStudent: Bool = true
+    @State private var tabType: tabType = .isEmptyRoom
+    @State private var showAlert: Bool = false
     
     var body: some View {
         VStack(alignment: .center, spacing: 0){
             HeaderView()
                 .environment(\.colorScheme, .dark)
             
-            TabView(selection: $activeTab) {
-                RoutineView(isStudent: $isStudent, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
+            RoutineViewManualAnimation(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
                     .onAppear {
                             // Setting up initial Selection Date
                         guard selectedDate == nil else { return }
                             // Today's Data
                         selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
-                    }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            .overlay(alignment: .bottomTrailing) {
+                ZStack(alignment: .bottomTrailing) {
+                    TimeChangeButton()
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 5)
+                }
+            }
             .background(.testBg)
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
-                //            .ignoresSafeArea(.container, edges: .bottom)
         }
         .background(.mainBackground)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -117,5 +120,5 @@ struct EmptyRoom: View {
 }
 
 #Preview {
-    EmptyRoom(showAlert: .constant(false))
+    EmptyRoom(isSearching: .constant(false))
 }

@@ -1,14 +1,9 @@
-    //
-    //  ExpandableSearchBar.swift
-    //  Practice
-    //
-    //  Created by Hafizur Rahman on 16/8/25.
-    //
 import SwiftUI
 
 struct TExpandableSearchBar: View {
     @State var searchText: String = ""
     @Binding var isSearching: Bool
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         ZStack {
@@ -17,24 +12,9 @@ struct TExpandableSearchBar: View {
                     TextField("Teacher Initial (MJZ)", text: $searchText)
                         .foregroundStyle(.white.opacity(0.9))
                         .padding(.horizontal, 24)
+                        .focused($isTextFieldFocused)
                     
                     Spacer()
-                    
-                    HStack (spacing: 0) {
-                        Divider()
-                            .frame(height: 30)
-                        
-                        DropdownMenu(dropdownAlignment: .center, fromTop: true, options: [
-                            DropdownOption(title: "CSE", action: { print("Show CSE details") }),
-                        ])
-                        .frame(width: 50)
-                        
-                        Divider()
-                            .frame(width: 2)
-                            .frame(height: 30)
-                            .foregroundStyle(.gray.opacity(0.8))
-                    }
-                    .offset(x: -60)
                 }
                 
             }
@@ -61,13 +41,21 @@ struct TExpandableSearchBar: View {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.mainBackground)
         }
-        .animation(.easeInOut(duration: 0.3), value: isSearching)
+        .animation(.easeInOut(duration: 0.4), value: isSearching)
+        .onChange(of: isSearching) { _, newValue in
+            if newValue {
+                    // Small delay to ensure the animation completes before focusing
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    isTextFieldFocused = true
+                }
+            } else {
+                isTextFieldFocused = false
+            }
+        }
     }
 }
 
-
 #Preview {
-    TExpandableSearchBar(isSearching: .constant(false))
+    TExpandableSearchBar(isSearching: .constant(true))
         .padding(.horizontal, 16)
 }
-

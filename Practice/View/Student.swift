@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct Student: View {
+    
+    @Binding var showAlert: Bool
+    @Binding var isSearching: Bool
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var selectedDate: Date?
@@ -8,8 +11,8 @@ struct Student: View {
     @Namespace private var namespace
     @State private var activeTab: StudentTab = .routine
     var offSetObserve = PageOffsetObserver()
-    @Binding var showAlert: Bool
-    @State private var isStudent: Bool = true
+    @State private var tabType: tabType = .isStudent
+    var haveData: Bool = false
     
     
     var body: some View {
@@ -17,40 +20,91 @@ struct Student: View {
             HeaderView()
                 .environment(\.colorScheme, .dark)
             
-            TabView(selection: $activeTab) {
-                    RoutineView(isStudent: $isStudent,
+            if haveData {
+                VStack {
+                    LottieAnimation(animationName: "discover.json")
+                        .frame(maxWidth: .infinity , maxHeight: 250)
+                        .padding(.horizontal, 30)
+                    
+                    Text("Enter Your Section")
+                        .foregroundStyle(.white.opacity(0.9))
+                        .fontWeight(.medium)
+                        .padding(.bottom, 40)
+                }
+                .frame(maxWidth: .infinity , maxHeight: .infinity)
+                .overlay(alignment: .bottomTrailing) {
+                    ZStack(alignment: .bottomTrailing) {
+                        if isSearching {
+                                // Fullscreen invisible layer
+                            Color.black.opacity(0.001)
+                                .ignoresSafeArea()
+                                .onTapGesture {
+                                    isSearching = false
+                                }
+                                .zIndex(1)
+                        }
+                        
+                        SExpandableSearchBar(isSearching: $isSearching)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 5)
+                            .zIndex(2)
+                    }
+                }
+                .background(.testBg)
+                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
+            } else {
+                TabView(selection: $activeTab) {
+                    RoutineViewManualAnimation(tabType: $tabType,
                                 currentWeek: $currentWeek,
                                 selectedDate: $selectedDate,
                                 showAlert: $showAlert
                     )
                     .onAppear {
-                        // Setting up initial Selection Date
+                            // Setting up initial Selection Date
                         guard selectedDate == nil else { return }
-                        // Today's Data
+                            // Today's Data
                         selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
                     }.tag(StudentTab.routine)
-                
-                
-                
-                ScrollView(.vertical) {
-                    SInsightCard().padding(20)
+                    
+                    
+                    
+                    ScrollView(.vertical) {
+                        SInsightCard().padding(20)
+                    }
+                    .tag(StudentTab.insights)
                 }
-                .tag(StudentTab.insights)
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .overlay(alignment: .bottomTrailing) {
+                    ZStack(alignment: .bottomTrailing) {
+                        if isSearching {
+                                // Fullscreen invisible layer
+                            Color.black.opacity(0.001)
+                                .ignoresSafeArea()
+                                .onTapGesture {
+                                    isSearching = false
+                                }
+                                .zIndex(1)
+                        }
+                        
+                        SExpandableSearchBar(isSearching: $isSearching)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 5)
+                            .zIndex(2)
+                    }
+                }
+                .background(.testBg)
+                .clipShape(UnevenRoundedRectangle(
+                    topLeadingRadius: 30,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 30,
+                    style: .continuous)
+                )
+                .ignoresSafeArea(.all, edges: .bottom)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .background(.testBg)
-            .clipShape(UnevenRoundedRectangle(
-                topLeadingRadius: 30,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 30,
-                style: .continuous)
-            )
-//            .ignoresSafeArea(.container, edges: .bottom)
         }
         .background(.mainBackground)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        
     }
     
     @ViewBuilder
@@ -174,7 +228,7 @@ struct Student: View {
 }
 
 #Preview {
-    Student(showAlert: .constant(false))
+    Student(showAlert: .constant(false), isSearching: .constant(false))
 }
 
 @Observable

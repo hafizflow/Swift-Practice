@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SExpandableSearchBar: View {
+struct EExpandableSearchBar: View {
     @State var searchText: String = ""
     @Binding var isSearching: Bool
     @FocusState private var isTextFieldFocused: Bool
@@ -72,6 +72,6 @@ struct SExpandableSearchBar: View {
 }
 
 #Preview {
-    SExpandableSearchBar(isSearching: .constant(false))
+    EExpandableSearchBar(isSearching: .constant(false))
         .padding(.horizontal, 16)
 }
