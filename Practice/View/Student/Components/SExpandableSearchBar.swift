@@ -35,7 +35,6 @@ struct SExpandableSearchBar: View {
                 
             }
             
-            HStack (spacing: 0) {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(lineWidth: 1)
                     .foregroundStyle(.gray.opacity(0.65))
@@ -51,12 +50,13 @@ struct SExpandableSearchBar: View {
                                 .padding(.trailing, 20)
                         }
                     }
-            }
         }
         .background {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.mainBackground)
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 5)
         .animation(.easeInOut(duration: 0.4), value: isSearching)
         .onChange(of: isSearching) { _, newValue in
             if newValue {

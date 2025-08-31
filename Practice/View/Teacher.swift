@@ -21,6 +21,10 @@ struct Teacher: View {
     @State private var showAlert: Bool = false
     var haveData: Bool = false
     
+    @State private var showSettings = false
+    @State private var isScrolledDown = false
+    
+    
     
     var body: some View {
         VStack(alignment: .center, spacing: 0){
@@ -60,7 +64,7 @@ struct Teacher: View {
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
             } else {
                 TabView(selection: $activeTab) {
-                    RoutineViewManualAnimation(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
+                    RoutineView(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert, isScrolledDown: $isScrolledDown)
                         .onAppear {
                                 // Setting up initial Selection Date
                             guard selectedDate == nil else { return }
@@ -101,7 +105,10 @@ struct Teacher: View {
             }
         }
         .background(.mainBackground)
-        
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .fullScreenCover(isPresented: $showSettings) {
+            SettingsView(isPresented: $showSettings)
+        }
     }
     
     @ViewBuilder
@@ -152,6 +159,7 @@ struct Teacher: View {
                 Spacer(minLength: 0)
                 
                 Button {
+                    showSettings.toggle()
                 } label: {
                     Image(.setting)
                         .renderingMode(.template)
@@ -161,6 +169,7 @@ struct Teacher: View {
                         .opacity(0.8)
                 }
             }
+            .padding(.horizontal, 5)
             
                 // Week View
             HStack(spacing: 0) {
@@ -182,7 +191,7 @@ struct Teacher: View {
                             .background {
                                 if isSameDate {
                                     Circle()
-                                        .fill(.white)
+                                        .fill(.white.opacity(0.9))
                                         .matchedGeometryEffect(id: "ACTIVEDATE", in: namespace)
                                 }
                             }

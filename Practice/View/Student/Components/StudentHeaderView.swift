@@ -1,66 +1,18 @@
-//
-//  EmptyRoom.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 24/8/25.
-//
-
 import SwiftUI
 
-struct EmptyRoom: View {
-    @Binding var isSearching: Bool
-        // View Properties
-    @State private var currentWeek: [Date.Day] = Date.currentWeek
-    @State private var selectedDate: Date?
+struct StudentHeaderView: View {
+    @Binding var currentWeek: [Date.Day]
+    @Binding var selectedDate: Date?
+    @Binding var activeTab: StudentTab
+    @Binding var showSettings: Bool
+    
         // For Matched Geometry Effect
     @Namespace private var namespace
-    @State private var activeTab: StudentTab = .routine
-    @State private var tabType: tabType = .isEmptyRoom
-    @State private var showAlert: Bool = false
-    @State private var isScrolledDown: Bool = false
-    
-    @State private var showSettings: Bool = false
     
     var body: some View {
-        VStack(alignment: .center, spacing: 0){
-            HeaderView()
-                .environment(\.colorScheme, .dark)
-            
-            RoutineView(
-                tabType: $tabType,
-                currentWeek: $currentWeek,
-                selectedDate: $selectedDate,
-                showAlert: $showAlert,
-                isScrolledDown: $isScrolledDown)
-                    .onAppear {
-                            // Setting up initial Selection Date
-                        guard selectedDate == nil else { return }
-                            // Today's Data
-                        selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
-            }
-            .overlay(alignment: .bottomTrailing) {
-                ZStack(alignment: .bottomTrailing) {
-                    TimeChangeButton()
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 5)
-                }
-            }
-            .background(.testBg)
-            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
-        }
-        .background(.mainBackground)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .fullScreenCover(isPresented: $showSettings) {
-            SettingsView(isPresented: $showSettings)
-        }
-    }
-    
-    
-    @ViewBuilder
-    func HeaderView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("EmptyRoom")
+                Text("Student")
                     .font(.title.bold())
                     .opacity(0.8)
                 
@@ -79,7 +31,7 @@ struct EmptyRoom: View {
             }
             .padding(.horizontal, 5)
             
-                // Week View
+                // Week View (excluding Friday)
             HStack(spacing: 0) {
                 ForEach(currentWeek.filter { Calendar.current.component(.weekday, from: $0.date) != 6 }) { day in
                     let date = day.date
@@ -113,25 +65,40 @@ struct EmptyRoom: View {
                     }
                 }
             }
-            .animation(.snappy(duration: 0.25, extraBounce: 0), value: selectedDate)
+            .animation(.snappy(duration: 0.3, extraBounce: 0), value: selectedDate)
             .frame(height: 80)
             .padding(.vertical, 5)
             .offset(y: 5)
             
-            
             HStack (alignment: .center) {
                 Text(selectedDate?.string("MMM") ?? "")
+                
                 Spacer()
+                
+                StudentTabBar(activeTab: $activeTab)
+                    .frame(maxHeight: 24)
+                    .padding(.horizontal, 40)
+                    .foregroundStyle(.white.opacity(0.9))
+                
+                Spacer()
+                
                 Text(selectedDate?.string("YYY") ?? "")
             }
             .font(.caption2)
-            
         }
-        .padding([.horizontal, .top], 15)
+        .padding(.horizontal, 15)
+        .padding(.top, 15)
         .padding(.bottom, 10)
     }
 }
 
 #Preview {
-    EmptyRoom(isSearching: .constant(false))
+    StudentHeaderView(
+        currentWeek: .constant(Date.currentWeek),
+        selectedDate: .constant(Date()),
+        activeTab: .constant(.routine),
+        showSettings: .constant(false)
+    )
+    .background(.mainBackground)
+    .environment(\.colorScheme, .dark)
 }

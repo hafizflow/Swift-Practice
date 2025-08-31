@@ -19,15 +19,18 @@ struct Home: View {
             TabView(selection: $activeTab) {
                 NavigationStack {
                     Student(showAlert: $showAlert, isSearching: $isSearchingS)
-                }.setUpTab(.student)
-
+                }
+                .setUpTab(.student)
+                
                 NavigationStack {
                     Teacher(isSearching: $isSearchingT)
-                }.setUpTab(.teacher)
+                }
+                .setUpTab(.teacher)
                 
                 NavigationStack {
                     EmptyRoom(isSearching: $isSearchingEmpty)
-                }.setUpTab(.emptyRoom)
+                }
+                .setUpTab(.emptyRoom)
                 
                 NavigationStack {
                     ExamRoutine(showAlert: $showAlert, isSearching: $isSearchingExam)
@@ -46,7 +49,6 @@ struct Home: View {
         HStack(spacing: 0) {
             ForEach($allTabs) { $animatedTab in
                 let tab = animatedTab.tab
-                
                 VStack(spacing: 4) {
                     Image(systemName: tab.rawValue)
                         .font(.title2)

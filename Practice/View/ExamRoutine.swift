@@ -12,6 +12,7 @@ struct ExamRoutine: View {
     @Namespace private var namespace
     @State private var activeTab: TeacherTab = .routine
     var haveData = false
+    @State private var showSettings: Bool = false
     
     
     
@@ -90,6 +91,10 @@ struct ExamRoutine: View {
                         }
                     }
                     .background(.mainBackground)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .fullScreenCover(isPresented: $showSettings) {
+                        SettingsView(isPresented: $showSettings)
+                    }
                 }
 
             }
@@ -110,6 +115,7 @@ struct ExamRoutine: View {
                 Spacer(minLength: 0)
                 
                 Button {
+                    showSettings.toggle()
                 } label: {
                     Image(.setting)
                         .renderingMode(.template)
@@ -119,6 +125,7 @@ struct ExamRoutine: View {
                         .opacity(0.8)
                 }
             }
+            .padding(.horizontal, 5)
             
             HStack (alignment: .center) {
                 Text(selectedDate?.string("MMM") ?? "")

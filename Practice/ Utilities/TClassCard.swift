@@ -9,7 +9,7 @@ import SwiftUI
 import Lottie
 
 struct TClassCard: View {
-    var isEmpty: Bool = false
+    var isEmpty: Bool = true
     
     var body: some View {
         Group {
