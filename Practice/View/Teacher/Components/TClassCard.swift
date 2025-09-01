@@ -1,15 +1,8 @@
-//
-//  TClassCard.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 21/8/25.
-//
-
 import SwiftUI
 import Lottie
 
 struct TClassCard: View {
-    var isEmpty: Bool = true
+    var isEmpty: Bool = false
     
     var body: some View {
         Group {

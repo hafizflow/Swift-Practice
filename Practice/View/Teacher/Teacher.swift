@@ -1,34 +1,33 @@
 import SwiftUI
 
-struct Student: View {
+struct Teacher: View {
     
-    @Binding var showAlert: Bool
     @Binding var isSearching: Bool
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
+    @State private var tabType: tabType = .isTeacher
     @State private var selectedDate: Date?
-    @State private var activeTab: StudentTab = .routine
-    var offSetObserve = PageOffsetObserver()
-    @State private var tabType: tabType = .isStudent
-    var haveData: Bool = false
+        // For Matched Geometry Effect
+    @Namespace private var namespace
+    @State private var activeTab: TeacherTab = .routine
+    @State private var showAlert: Bool = false
+    var haveData: Bool = true
     
-        // Settings sheet state
-    @State private var showSettings: Bool = false
-    @State private var isScrolledDown: Bool = false
-    @State private var showMonthRoutineStudent: Bool = false
+    @State private var showSettings = false
+    @State private var isScrolledDown = false
+    @State private var showMonthRoutineFaculty: Bool = false
     
     var body: some View {
         VStack(alignment: .center, spacing: 0){
             VStack(alignment: .leading, spacing: 12) {
-                StudentHeaderView(
+                TeacherHeaderView(
                     currentWeek: $currentWeek,
                     selectedDate: $selectedDate,
-                    activeTab: $activeTab,
                     showSettings: $showSettings
                 )
                 
                 if !haveData {
-                    StudentTabBar(
+                    TeacherTabBar(
                         activeTab: $activeTab,
                         selectedDate: $selectedDate,
                         tint: .gray,
@@ -46,7 +45,7 @@ struct Student: View {
                         .frame(maxWidth: .infinity , maxHeight: 250)
                         .padding(.horizontal, 30)
                     
-                    Text("Enter Your Section")
+                    Text("Enter Teacher Initial")
                         .foregroundStyle(.white.opacity(0.9))
                         .fontWeight(.medium)
                         .padding(.bottom, 40)
@@ -55,7 +54,6 @@ struct Student: View {
                 .overlay(alignment: .bottomTrailing) {
                     ZStack(alignment: .bottomTrailing) {
                         if isSearching {
-                                // Fullscreen invisible layer
                             Color.black.opacity(0.001)
                                 .ignoresSafeArea()
                                 .onTapGesture {
@@ -64,7 +62,7 @@ struct Student: View {
                                 .zIndex(1)
                         }
                         
-                        SExpandableSearchBar(isSearching: $isSearching)
+                        TExpandableSearchBar(isSearching: $isSearching)
                             .zIndex(2)
                     }
                 }
@@ -72,32 +70,29 @@ struct Student: View {
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
             } else {
                 TabView(selection: $activeTab) {
-                    RoutineView(tabType: $tabType,
-                                currentWeek: $currentWeek,
-                                selectedDate: $selectedDate,
-                                showAlert: $showAlert,
-                                isScrolledDown: $isScrolledDown
-                    )
-                    .onAppear {
-                            // Setting up initial Selection Date
-                        guard selectedDate == nil else { return }
-                            // Today's Data
-                        selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
-                    }
-                    .tag(StudentTab.routine)
+                    RoutineView(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert, isScrolledDown: $isScrolledDown)
+                        .onAppear {
+                                // Setting up initial Selection Date
+                            guard selectedDate == nil else { return }
+                                // Today's Data
+                            selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
+                        }
+                        .tag(TeacherTab.routine)
+                    
                     
                     ScrollView(.vertical) {
-                        SInsightCard()
+                        TInsightCard()
                             .padding(20)
                             .padding(.bottom, 100)
                     }
-                    .tag(StudentTab.insights)
+                    .tag(TeacherTab.insights)
+                    
+                    
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .overlay(alignment: .bottomTrailing) {
                     ZStack(alignment: .bottomTrailing) {
                         if isSearching {
-                                // Fullscreen invisible layer
                             Color.black.opacity(0.001)
                                 .ignoresSafeArea()
                                 .onTapGesture {
@@ -106,7 +101,7 @@ struct Student: View {
                                 .zIndex(1)
                         }
                         
-                        CalenderButton(showMonthRoutine: $showMonthRoutineStudent)
+                        CalenderButton(showMonthRoutine: $showMonthRoutineFaculty)
                             .opacity(shouldHideCalendarButton ? 0 : 1)
                             .scaleEffect(shouldHideCalendarButton ? 0.8 : 1)
                             .offset(y: shouldHideCalendarButton ? 20 : 0)
@@ -114,19 +109,23 @@ struct Student: View {
                             .zIndex(shouldHideCalendarButton ? 0 : 1)
                             .disabled(shouldHideCalendarButton)
                         
-                        
-                        SExpandableSearchBar(isSearching: $isSearching)
-                            .zIndex(2)
+                        ZStack {
+                            if activeTab == .routine {
+                                TExpandableSearchBar(isSearching: $isSearching)
+                                    .zIndex(2)
+                            } else {
+                                TeacherSearchButton()
+                                    .transition(
+                                        .asymmetric(insertion: .scale.combined(with: .opacity),
+                                                    removal: .scale.combined(with: .opacity))
+                                    )
+                            }
+                        }
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: activeTab)
                     }
                 }
                 .background(.testBg)
-                .clipShape(UnevenRoundedRectangle(
-                    topLeadingRadius: 30,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 30,
-                    style: .continuous)
-                )
+                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
                 .ignoresSafeArea(.all, edges: .bottom)
             }
         }
@@ -135,20 +134,17 @@ struct Student: View {
         .fullScreenCover(isPresented: $showSettings) {
             SettingsView(isPresented: $showSettings)
         }
-        .fullScreenCover(isPresented: $showMonthRoutineStudent) {
-            SMonthRoutine(showMonthRoutineStudent: $showMonthRoutineStudent)
+        .fullScreenCover(isPresented: $showMonthRoutineFaculty) {
+            TMonthRoutine(showMonthRoutineFaculty: $showMonthRoutineFaculty)
         }
     }
     
-        // Computed property for cleaner logic
+    // Computed property for cleaner logic
     private var shouldHideCalendarButton: Bool {
         return isSearching || isScrolledDown
     }
 }
 
 #Preview {
-    Student(
-        showAlert: .constant(false),
-        isSearching: .constant(false),
-    )
+    Teacher(isSearching: .constant(false))
 }

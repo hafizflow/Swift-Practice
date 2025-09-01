@@ -1,18 +1,15 @@
 import SwiftUI
 
-struct StudentHeaderView: View {
+struct TeacherHeaderView: View {
     @Binding var currentWeek: [Date.Day]
     @Binding var selectedDate: Date?
-    @Binding var activeTab: StudentTab
     @Binding var showSettings: Bool
-    
-        // For Matched Geometry Effect
     @Namespace private var namespace
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Student")
+                Text("Teacher")
                     .font(.title.bold())
                     .opacity(0.8)
                 
@@ -31,7 +28,7 @@ struct StudentHeaderView: View {
             }
             .padding(.horizontal, 5)
             
-                // Week View (excluding Friday)
+                // Week View
             HStack(spacing: 0) {
                 ForEach(currentWeek.filter { Calendar.current.component(.weekday, from: $0.date) != 6 }) { day in
                     let date = day.date
@@ -65,24 +62,12 @@ struct StudentHeaderView: View {
                     }
                 }
             }
-            .animation(.snappy(duration: 0.3, extraBounce: 0), value: selectedDate)
+            .animation(.snappy(duration: 0.25, extraBounce: 0), value: selectedDate)
             .frame(height: 80)
             .padding(.vertical, 5)
             .offset(y: 5)
         }
-        .padding(.horizontal, 15)
-        .padding(.top, 15)
+        .padding([.horizontal, .top], 15)
         .padding(.bottom, 10)
     }
-}
-
-#Preview {
-    StudentHeaderView(
-        currentWeek: .constant(Date.currentWeek),
-        selectedDate: .constant(Date()),
-        activeTab: .constant(.routine),
-        showSettings: .constant(false)
-    )
-    .background(.mainBackground)
-    .environment(\.colorScheme, .dark)
 }

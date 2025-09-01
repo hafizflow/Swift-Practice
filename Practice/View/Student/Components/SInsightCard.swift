@@ -55,12 +55,14 @@ struct SInsightCard: View {
                 .padding(.bottom, 16)
             
             
-                // Grid
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.fixed(80), spacing: 12),
+            ], spacing: 16) {
                 
-                
-                    // Total Course Enrolled
-                ZStack {
+
+                ZStack(alignment: .center) {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(.testBg)
                         .frame(height: 80)
@@ -75,14 +77,11 @@ struct SInsightCard: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.white.opacity(0.8))
                         .fontWeight(.bold)
-                        .font(.headline)
                         .padding(.horizontal, 8)
                         .lineSpacing(4)
                 }
-                
-                
-                    // Total weekly class
-                ZStack {
+
+                ZStack(alignment: .center) {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(.testBg)
                         .frame(height: 80)
@@ -97,18 +96,16 @@ struct SInsightCard: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.white.opacity(0.8))
                         .fontWeight(.bold)
-                        .font(.headline)
                         .padding(.horizontal, 8)
                         .lineSpacing(4)
                 }
                 
-                
-                    // Download PDF
+                // Download PDF (smaller width)
                 ZStack {
                     Button(action: {
                             // Download Code
                     }) {
-                        ZStack {
+                        ZStack(alignment: .center) {
                             RoundedRectangle(cornerRadius: 15)
                                 .fill(.teal.opacity(0.1))
                                 .frame(height: 80)
@@ -117,20 +114,23 @@ struct SInsightCard: View {
                                         .stroke(.gray.opacity(0.45), lineWidth: 1)
                                 )
                             
-                            Text("Download PDF")
-                                .lineLimit(2)
-                                .multilineTextAlignment(.center)
-                                .font(.system(size: 12))
-                                .foregroundStyle(.white.opacity(0.8))
-                                .fontWeight(.bold)
-                                .font(.headline)
-                                .padding(.horizontal, 15)
-                                .lineSpacing(4)
+                            VStack(alignment: .center, spacing: 4) {
+                                Image(systemName: "arrow.down.app.fill")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white.opacity(0.8))
+                                
+                                Text("PDF")
+                                    .lineLimit(1)
+                                    .multilineTextAlignment(.center)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.white.opacity(0.8))
+                                    .fontWeight(.bold)
+                            }
                         }
                     }
                 }
             }
-            
             
         }
         .lineLimit(1)

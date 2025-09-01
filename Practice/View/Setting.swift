@@ -8,8 +8,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 0) {
-                VStack {
-                        // Header
+                    // Header
                     HStack {
                         Text("Settings")
                             .font(.title.bold())
@@ -28,8 +27,9 @@ struct SettingsView: View {
                     }
                     .padding(.top, 15)
                     .padding(.bottom, 30)
+                    .padding(.horizontal, 20)
                     
-                        // Settings Content
+                    // Settings Content
                     ScrollView {
                         VStack(spacing: 20) {
                                 // Preferences Section
@@ -70,10 +70,11 @@ struct SettingsView: View {
                             DeveloperSection()
                         }
                     }
+                    .contentMargins(.all, 20, for: .scrollContent)
+                    .contentMargins(.vertical, 20, for: .scrollIndicators)
+                    .padding(.bottom, 16)
                     
                     Spacer()
-                }
-                .padding(.horizontal, 20)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.mainBackground)

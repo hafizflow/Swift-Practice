@@ -41,6 +41,8 @@ struct TExpandableSearchBar: View {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.mainBackground)
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 5)
         .animation(.easeInOut(duration: 0.4), value: isSearching)
         .onChange(of: isSearching) { _, newValue in
             if newValue {

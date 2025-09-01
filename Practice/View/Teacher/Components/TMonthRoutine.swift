@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct SMonthRoutine: View {
-    @Binding var showMonthRoutineStudent: Bool
+struct TMonthRoutine: View {
+    @Binding var showMonthRoutineFaculty: Bool
     
     @State private var currentMonth = Date()
     @State private var selectedDate: Date?
@@ -11,14 +11,14 @@ struct SMonthRoutine: View {
             VStack(alignment: .leading, spacing: 0) {
                     // Header
                 HStack {
-                    Text("Student Routine")
+                    Text("Faculty Routine")
                         .font(.title.bold())
                         .foregroundStyle(.white)
                     
                     Spacer()
                     
                     Button {
-                        showMonthRoutineStudent.toggle()
+                        showMonthRoutineFaculty.toggle()
                     } label: {
                         Image(systemName: "xmark")
                             .font(.title2)
@@ -157,130 +157,6 @@ struct SMonthRoutine: View {
     }
 }
 
-
-
-struct CalendarGridView: View {
-    @Binding var currentMonth: Date
-    @Binding var selectedDate: Date?
-    
-    private let calendar = Calendar.current
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter
-    }()
-    
-    var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                // Weekday headers
-            ForEach(weekdayHeaders, id: \.self) { weekday in
-                Text(weekday)
-                    .font(.caption.bold())
-                    .foregroundStyle(.gray)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 32)
-            }
-            
-                // Calendar days
-            ForEach(calendarDays, id: \.self) { date in
-                if let date = date {
-                    CalendarDayView(
-                        date: date,
-                        isSelected: calendar.isDate(date, inSameDayAs: selectedDate ?? Date.distantPast),
-                        isToday: calendar.isDate(date, inSameDayAs: Date()),
-                        isCurrentMonth: calendar.isDate(date, equalTo: currentMonth, toGranularity: .month),
-                        isPastDate: isPastDate(date)
-                    ) {
-                            // Allow selection of all dates in current month or future dates
-                        if calendar.isDate(date, equalTo: currentMonth, toGranularity: .month) || date >= calendar.startOfDay(for: Date()) {
-                            selectedDate = date
-                        }
-                    }
-                } else {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(height: 40)
-                }
-            }
-        }
-        .animation(.easeInOut(duration: 0.3), value: currentMonth)
-    }
-    
-    private var weekdayHeaders: [String] {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.current
-        return formatter.shortWeekdaySymbols
-    }
-    
-    private var calendarDays: [Date?] {
-        guard let monthInterval = calendar.dateInterval(of: .month, for: currentMonth),
-              let monthFirstWeek = calendar.dateInterval(of: .weekOfYear, for: monthInterval.start),
-              let monthLastWeek = calendar.dateInterval(of: .weekOfYear, for: monthInterval.end)
-        else { return [] }
-        
-        var days: [Date?] = []
-        var date = monthFirstWeek.start
-        
-        while date < monthLastWeek.end {
-            days.append(date)
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: date) else { break }
-            date = nextDate
-        }
-        
-        return days
-    }
-    
-    private func isPastDate(_ date: Date) -> Bool {
-        date < calendar.startOfDay(for: Date())
-    }
-}
-
-struct CalendarDayView: View {
-    let date: Date
-    let isSelected: Bool
-    let isToday: Bool
-    let isCurrentMonth: Bool
-    let isPastDate: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text("\(Calendar.current.component(.day, from: date))")
-                .font(.system(size: 16, weight: isToday ? .bold : .medium))
-                .foregroundStyle(textColor)
-                .frame(width: 40, height: 40)
-                .background(backgroundColor)
-                .clipShape(Circle())
-                .scaleEffect(isSelected ? 1.0 : 1.0)
-                .animation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0), value: isSelected)
-        }
-    }
-    
-    private var textColor: Color {
-        if isSelected {
-            return .black
-        } else if isPastDate {
-            return .gray.opacity(0.5)
-        } else if isToday {
-            return .black
-        } else if !isCurrentMonth {
-            return .gray.opacity(0.5)
-        } else {
-            return .white.opacity(0.8)
-        }
-    }
-    
-    private var backgroundColor: Color {
-        if isSelected {
-            return .teal.opacity(0.9)
-        } else if isToday && !isSelected {
-            return .white.opacity(0.9)
-        } else {
-            return .clear
-        }
-    }
-}
-
 #Preview {
-    SMonthRoutine(showMonthRoutineStudent: .constant(true))
+    TMonthRoutine(showMonthRoutineFaculty: .constant(true))
 }

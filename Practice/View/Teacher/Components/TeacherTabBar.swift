@@ -1,12 +1,12 @@
 import SwiftUI
 
-struct StudentTabBar: View {
-    @Binding var activeTab: StudentTab
+struct TeacherTabBar: View {
+    @Binding var activeTab: TeacherTab
     @Binding var selectedDate: Date?
     let tint: Color
     let weight: Font.Weight
     
-    init(activeTab: Binding<StudentTab>, selectedDate: Binding<Date?>, tint: Color = .gray, weight: Font.Weight = .regular) {
+    init(activeTab: Binding<TeacherTab>, selectedDate: Binding<Date?>, tint: Color = .gray, weight: Font.Weight = .regular) {
         self._activeTab = activeTab
         self._selectedDate = selectedDate
         self.tint = tint
@@ -21,7 +21,7 @@ struct StudentTabBar: View {
             
             VStack(alignment: .center, spacing: 0) {
                 HStack {
-                    ForEach(StudentTab.allCases, id: \.rawValue) { tab in
+                    ForEach(TeacherTab.allCases, id: \.rawValue) { tab in
                         Text(tab.rawValue)
                             .font(.system(size: 14))
                             .fontWeight(weight)
@@ -38,7 +38,7 @@ struct StudentTabBar: View {
                 
                     // Underline for the active tab
                 GeometryReader { geometry in
-                    let tabWidth = geometry.size.width / CGFloat(StudentTab.allCases.count)
+                    let tabWidth = geometry.size.width / CGFloat(TeacherTab.allCases.count)
                     let offsetX = CGFloat(activeTab.index) * tabWidth
                     
                     Rectangle()
@@ -60,16 +60,4 @@ struct StudentTabBar: View {
         }
         .font(.caption2)
     }
-}
-
-#Preview {
-    StudentTabBar(
-        activeTab: .constant(.routine),
-        selectedDate: .constant(Date()),
-        tint: .gray,
-        weight: .semibold
-    )
-    .foregroundStyle(.white.opacity(0.9))
-    .background(.mainBackground)
-    .environment(\.colorScheme, .dark)
 }

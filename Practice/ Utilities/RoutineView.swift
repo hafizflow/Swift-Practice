@@ -141,23 +141,23 @@ struct RoutineView: View {
     private func handleScrollChange(currentOffset: CGFloat) {
         let scrollDifference = currentOffset - previousScrollOffset
         
-            // Only process scroll changes if the difference is significant enough
+        // Only process scroll changes if the difference is significant enough
         guard abs(scrollDifference) > 5 else { return }
         
-            // Calculate the maximum scroll position (bottom of content)
+        // Calculate the maximum scroll position (bottom of content)
         let maxScrollOffset = -(max(0, contentHeight - scrollViewHeight + 40)) // 40 for margins
         
-            // Ignore scroll changes if we're in bounce territory
+        // Ignore scroll changes if we're in bounce territory
         let isAtTopBounce = currentOffset > 20 // Top bounce threshold
         let isAtBottomBounce = currentOffset < maxScrollOffset - 50 // Bottom bounce threshold
         
-            // Only update scroll state if we're not bouncing
+        // Only update scroll state if we're not bouncing
         if !isAtTopBounce && !isAtBottomBounce {
             if scrollDifference > 0 {
-                    // Scrolling up (content moving down)
+                // Scrolling up (content moving down)
                 isScrolledDown = false
             } else {
-                    // Scrolling down (content moving up)
+                // Scrolling down (content moving up)
                 isScrolledDown = true
             }
             previousScrollOffset = currentOffset
