@@ -11,7 +11,7 @@ struct Teacher: View {
     @Namespace private var namespace
     @State private var activeTab: TeacherTab = .routine
     @State private var showAlert: Bool = false
-    var haveData: Bool = true
+    var haveData: Bool = false
     
     @State private var showSettings = false
     @State private var isScrolledDown = false
@@ -92,15 +92,6 @@ struct Teacher: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .overlay(alignment: .bottomTrailing) {
                     ZStack(alignment: .bottomTrailing) {
-                        if isSearching {
-                            Color.black.opacity(0.001)
-                                .ignoresSafeArea()
-                                .onTapGesture {
-                                    isSearching = false
-                                }
-                                .zIndex(1)
-                        }
-                        
                         CalenderButton(showMonthRoutine: $showMonthRoutineFaculty)
                             .opacity(shouldHideCalendarButton ? 0 : 1)
                             .scaleEffect(shouldHideCalendarButton ? 0.8 : 1)
@@ -125,6 +116,15 @@ struct Teacher: View {
                     }
                 }
                 .background(.testBg)
+                .contentShape(Rectangle()) // ensures taps are registered anywhere
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        if isSearching {
+                            isSearching = false
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                    }
+                )
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
                 .ignoresSafeArea(.all, edges: .bottom)
             }

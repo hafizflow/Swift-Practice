@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct Home: View {
     @State private var activeTab: Tab = .student
@@ -9,10 +10,23 @@ struct Home: View {
     @State private var isSearchingExam: Bool = false
     
     
+    @Environment(\.modelContext) private var context
+    @Query private var routines: [RoutineModel]
+    @Query private var courses: [CourseModel]
+    @Query private var teachers: [TeacherModel]
+    
+    @State private var inputSection: String = ""
+    @State private var selectedSection: String = ""
+    
+    @StateObject private var manager = DataManager()
+    
+    
     @State private var allTabs: [AnimatedTab] = Tab.allCases.compactMap { tab ->
         AnimatedTab? in
         return .init(tab: tab)
     }
+    
+    
     
     var body: some View {
         VStack(spacing: 0) {
@@ -40,6 +54,14 @@ struct Home: View {
             CustomTabBar()
         }
         .customAlert(isPresented: $showAlert)
+        .task {
+            if !manager.loaded {
+                await manager.loadRoutine(context: context, existingRoutines: routines)
+                await manager.loadCourse(context: context, existingCourses: courses)
+                await manager.loadTeacher(context: context, existingTeachers: teachers)
+                manager.loaded = true
+            }
+        }
     }
     
     

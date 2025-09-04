@@ -2,29 +2,16 @@ import SwiftUI
 import Lottie
 
 struct SClassCard: View {
-    var isEmpty: Bool = false
+    var routine: FilteredRoutine? = nil  
     @Binding var showAlert: Bool
     
     var body: some View {
         Group {
-            if isEmpty {
-                VStack(alignment: .center, spacing: 4) {
-                    LottieAnimation(animationName: "yogi.json")
-                        .frame(maxWidth: .infinity, maxHeight: 250)
-                    Text("Looks like you've got a free day!")
-                        .foregroundStyle(.white.opacity(0.9))
-                        .padding(.horizontal, 16)
-                    Text("Take it easy and explore new opportunities!")
-                        .font(.caption2)
-                        .foregroundStyle(.gray)
-                        .padding(.horizontal, 16)
-                }
-                .frame(height: 350)
-                .frame(maxWidth: .infinity)
-            } else {
+            if let routine = routine {
+                    // Class exists
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
-                        Text("08:30 - 10:00")
+                        Text("\(routine.startTime) - \(routine.endTime)")
                             .font(.system(size: 20))
                             .fontWeight(.bold)
                             .foregroundStyle(.teal.opacity(0.9))
@@ -32,7 +19,7 @@ struct SClassCard: View {
                         
                         Spacer()
                         
-                        Text("1 hour 30 mins")
+                        Text(routine.duration) // computed property, see below
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                             .font(.system(size: 16))
@@ -40,17 +27,7 @@ struct SClassCard: View {
                             .foregroundStyle(.gray)
                     }
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        Text("Data Structure - CSE333")
-                            .font(.system(size: 20))
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white.opacity(0.9))
-                            .padding([.top, .bottom], 6)
-                            .lineLimit(1)
-                            .brightness(-0.2)
-                        
-                    }
-                    
+                    OverflowingText(text: "\(routine.courseTitle) - \(routine.courseCode)")
                     
                     HStack {
                         HStack(alignment: .center, spacing: 10) {
@@ -59,7 +36,7 @@ struct SClassCard: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            Text("61_N")
+                            Text(routine.section)
                                 .font(.system(size: 16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white.opacity(0.8))
@@ -73,18 +50,17 @@ struct SClassCard: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            
                             Button(action: {
                                 showAlert = true
                             }) {
-                                Text("MMA")
+                                Text(routine.teacher)
                                     .font(.system(size: 16))
                                     .fontWeight(.bold)
                                     .foregroundStyle(.teal.opacity(0.9))
                                     .brightness(-0.2)
-                            }.buttonStyle(.plain)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        
                     }
                     
                     HStack(alignment: .center, spacing: 10) {
@@ -93,7 +69,7 @@ struct SClassCard: View {
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Text("KT-503 (COM LAB)")
+                        Text(routine.room)
                             .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
@@ -102,6 +78,22 @@ struct SClassCard: View {
                 }
                 .lineLimit(1)
                 .padding(15)
+                
+            } else {
+                    // Free day (empty state)
+                VStack(alignment: .center, spacing: 4) {
+                    LottieAnimation(animationName: "yogi.json")
+                        .frame(maxWidth: .infinity, maxHeight: 250)
+                    Text("Looks like you've got a free day!")
+                        .foregroundStyle(.white.opacity(0.9))
+                        .padding(.horizontal, 16)
+                    Text("Take it easy and explore new opportunities!")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                        .padding(.horizontal, 16)
+                }
+                .frame(height: 350)
+                .frame(maxWidth: .infinity)
             }
         }
         .background {
@@ -112,8 +104,54 @@ struct SClassCard: View {
     }
 }
 
-#Preview {
-    SClassCard(showAlert: .constant(false))
-        .padding(.horizontal, 16)
+extension FilteredRoutine {
+    var duration: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        
+        guard
+            let start = formatter.date(from: startTime),
+            let end = formatter.date(from: endTime)
+        else { return "" }
+        
+        let diff = Int(end.timeIntervalSince(start) / 60)
+        let hours = diff / 60
+        let mins = diff % 60
+        
+        if hours > 0 {
+            return "\(hours)h \(mins)m"
+        } else {
+            return "\(mins)m"
+        }
+    }
 }
 
+
+#Preview {
+    VStack(spacing: 20) {
+            // Preview empty state
+        SClassCard(routine: nil, showAlert: .constant(false))
+        
+            // Preview with sample data
+        SClassCard(
+            routine: FilteredRoutine(
+                courseCode: "CSE333",
+                room: "KT-503 (COM LAB)",
+                teacher: "MMA",
+                startTime: "08:30",
+                endTime: "10:00",
+                section: "61_N",
+                day: "Sunday",
+                courseTitle: "Data Structure",
+                teacherName: "MMA",
+                teacherCell: "01234",
+                teacherEmail: "mma@diu.edu",
+                teacherDesignation: "Professor",
+                teacherImage: ""
+            ),
+            showAlert: .constant(false)
+        )
+    }
+    .padding(.horizontal, 16)
+    .background(.black)
+}
