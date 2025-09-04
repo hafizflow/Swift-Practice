@@ -78,6 +78,13 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
+                .onTapGesture {
+                        // Only dismiss if not tapping on search bar
+                    if isSearching {
+                        isSearching = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -117,6 +124,13 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
+                .onTapGesture {
+                        // Only dismiss if not tapping on search bar
+                    if isSearching {
+                        isSearching = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -147,7 +161,7 @@ struct Student: View {
                     .tag(StudentTab.routine)
                     
                     ScrollView(.vertical) {
-                        SInsightCard()
+                        SInsightCard(routineManager: routineManager)
                             .padding(20)
                             .padding(.bottom, 100)
                     }
@@ -164,21 +178,18 @@ struct Student: View {
                             .zIndex(shouldHideCalendarButton ? 0 : 1)
                             .disabled(shouldHideCalendarButton)
                         
-                        SExpandableSearchBar(isSearching: $isSearching)
-                            .environmentObject(routineManager)  // Pass the manager
-                            .zIndex(2)
+                        searchBarOverlay
                     }
                 }
                 .background(.testBg)
-                .contentShape(Rectangle()) // ensures taps are registered anywhere
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        if isSearching {
-                            isSearching = false
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                        // Only dismiss if not tapping on search bar
+                    if isSearching {
+                        isSearching = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
-                )
+                }
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -232,7 +243,7 @@ struct Student: View {
     private var searchBarOverlay: some View {
         ZStack(alignment: .bottomTrailing) {
             SExpandableSearchBar(isSearching: $isSearching)
-                .environmentObject(routineManager)  // Pass the manager
+                .environmentObject(routineManager)
         }
     }
 }

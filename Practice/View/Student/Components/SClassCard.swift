@@ -19,7 +19,7 @@ struct SClassCard: View {
                         
                         Spacer()
                         
-                        Text(routine.duration) // computed property, see below
+                        Text(routine.duration)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                             .font(.system(size: 16))
@@ -114,7 +114,27 @@ extension FilteredRoutine {
             let end = formatter.date(from: endTime)
         else { return "" }
         
-        let diff = Int(end.timeIntervalSince(start) / 60)
+        let startHour = Calendar.current.component(.hour, from: start)
+        let startMinute = Calendar.current.component(.minute, from: start)
+        let endHour = Calendar.current.component(.hour, from: end)
+        let endMinute = Calendar.current.component(.minute, from: end)
+        
+            // Convert to 12-hour format logic
+            // Times like 01:00, 02:00, etc. that are <= 07:00 are likely PM (13:00, 14:00, etc.)
+            // Times like 08:00, 09:00, 10:00, 11:00, 12:00 are likely AM
+        let adjustedStartHour = startHour <= 7 && startHour != 0 ? startHour + 12 : startHour
+        let adjustedEndHour = endHour <= 7 && endHour != 0 ? endHour + 12 : endHour
+        
+        let startTotalMinutes = adjustedStartHour * 60 + startMinute
+        let endTotalMinutes = adjustedEndHour * 60 + endMinute
+        
+        var diff = endTotalMinutes - startTotalMinutes
+        
+            // Handle case where class goes to next day (shouldn't happen with proper 12-hour logic, but just in case)
+        if diff < 0 {
+            diff += 24 * 60
+        }
+        
         let hours = diff / 60
         let mins = diff % 60
         
@@ -125,7 +145,6 @@ extension FilteredRoutine {
         }
     }
 }
-
 
 #Preview {
     VStack(spacing: 20) {
@@ -143,6 +162,7 @@ extension FilteredRoutine {
                 section: "61_N",
                 day: "Sunday",
                 courseTitle: "Data Structure",
+                courseCredits: 2,
                 teacherName: "MMA",
                 teacherCell: "01234",
                 teacherEmail: "mma@diu.edu",

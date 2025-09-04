@@ -68,6 +68,7 @@ struct SExpandableSearchBar: View {
                                 }
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 12)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             
@@ -78,7 +79,9 @@ struct SExpandableSearchBar: View {
                         }
                     }
                 }
-                .frame(maxHeight: 160)
+                .frame(
+                    maxHeight: min(CGFloat(sectionSuggestions.count) * 44, 160) // ✅ auto height with max cap
+                )
                 .background {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.mainBackground)
@@ -86,6 +89,7 @@ struct SExpandableSearchBar: View {
                 }
                 .padding(.bottom, 5)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .zIndex(1) // Ensure suggestions are above other content
             }
             
                 // Main search bar
@@ -100,27 +104,16 @@ struct SExpandableSearchBar: View {
                                 performSearch()
                             }
                             .onChange(of: searchText) { _, newValue in
+                                    // Only update suggestions, no real-time search
                                 showSuggestions = !newValue.isEmpty && !sectionSuggestions.isEmpty
                             }
                         Spacer()
-                        HStack (spacing: 0) {
-                            Divider()
-                                .frame(height: 30)
-                            
-                            DropdownMenu(dropdownAlignment: .center, fromTop: true, options: [
-                                DropdownOption(title: "CSE", action: {
-                                    searchText = "CSE"
-                                    performSearch()
-                                }),
-                            ])
-                            .frame(width: 50)
-                            
-                            Divider()
-                                .frame(width: 2)
-                                .frame(height: 30)
-                                .foregroundStyle(.gray.opacity(0.8))
-                        }
-                        .offset(x: -60)
+                        
+                        DropdownMenu(dropdownAlignment: .center, fromTop: true, options: [
+                            DropdownOption(title: "CSE", action: {}),
+                            DropdownOption(title: "SWE", action: {}),
+                        ])
+                        .offset(x: -10)
                     }
                 }
                 
@@ -156,7 +149,7 @@ struct SExpandableSearchBar: View {
         .animation(.easeInOut(duration: 0.2), value: showSuggestions)
         .onChange(of: isSearching) { _, newValue in
             if newValue {
-               if !manager.selectedSection.isEmpty {
+                if !manager.selectedSection.isEmpty {
                     searchText = manager.selectedSection
                 }
                 
@@ -197,7 +190,7 @@ struct SExpandableSearchBar: View {
 }
 
 #Preview {
-    SExpandableSearchBar(isSearching: .constant(false))
+    SExpandableSearchBar(isSearching: .constant(true))
         .padding(.horizontal, 16)
         .environmentObject(RoutineManager())
 }

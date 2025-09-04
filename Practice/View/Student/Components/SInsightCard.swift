@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SInsightCard: View {
+    @ObservedObject var routineManager: RoutineManager
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Enrolled Course")
@@ -10,41 +12,20 @@ struct SInsightCard: View {
                 .brightness(-0.2)
                 .padding(.bottom, 6)
             
+                // Show enrolled courses dynamically
             VStack(spacing: 8) {
-                HStack(alignment: .center) {
-                    Text("Data Structure & Algorithm")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.gray)
-                    Spacer()
-                    Text("CSE333")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white.opacity(0.8))
-                }
-                
-                HStack(alignment: .center) {
-                    Text("System Analysis & Design")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.gray)
-                    Spacer()
-                    Text("CSE232")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white.opacity(0.8))
-                }
-                
-                HStack(alignment: .center) {
-                    Text("Software Development Lab")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.gray)
-                    Spacer()
-                    Text("CSE343")
-                        .font(.system(size: 16))
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white.opacity(0.8))
+                ForEach(Array(routineManager.courseStatistics), id: \.id) { course in
+                    HStack(alignment: .center) {
+                        Text(course.courseTitle)
+                            .font(.system(size: 16))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.gray)
+                        Spacer()
+                        Text(course.courseCode)
+                            .font(.system(size: 16))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
                 }
             }
             .padding(.bottom, 16)
@@ -54,14 +35,81 @@ struct SInsightCard: View {
                 .background(.gray.opacity(0.45))
                 .padding(.bottom, 16)
             
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
+            ], spacing: 16) {
+                
+                    // Total courses enrolled
+                ZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.testBg)
+                        .frame(height: 80)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(.gray.opacity(0.45), lineWidth: 1)
+                        )
+                    
+                    Text("Total Course Enrolled: \(routineManager.totalCoursesEnrolled)")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .lineSpacing(4)
+                }
+                
+                    // Total weekly classes
+                ZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.testBg)
+                        .frame(height: 80)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(.gray.opacity(0.45), lineWidth: 1)
+                        )
+                    
+                    Text("Total Weekly Classes: \(routineManager.totalWeeklyClasses)")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .lineSpacing(4)
+                }
+                
+                ZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.testBg)
+                        .frame(height: 80)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(.gray.opacity(0.45), lineWidth: 1)
+                        )
+                    
+                    Text("Weekly Class Hours: \(String(format: "%.1f", routineManager.totalWeeklyHours))")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .lineSpacing(4)
+                }
+            }
+            .padding(.bottom, 8)
+            
+            
             
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12),
-                GridItem(.fixed(80), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
             ], spacing: 16) {
-                
-
+                    // Weekend Class Hours
                 ZStack(alignment: .center) {
                     RoundedRectangle(cornerRadius: 15)
                         .fill(.testBg)
@@ -71,26 +119,8 @@ struct SInsightCard: View {
                                 .stroke(.gray.opacity(0.45), lineWidth: 1)
                         )
                     
-                    Text("Total Course Enrolled: 4")
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.white.opacity(0.8))
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 8)
-                        .lineSpacing(4)
-                }
-
-                ZStack(alignment: .center) {
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(.testBg)
-                        .frame(height: 80)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 15)
-                                .stroke(.gray.opacity(0.45), lineWidth: 1)
-                        )
-                    
-                    Text("Total Weekly Class: 5")
+//                    Text("Holidays: \(routineManager.weeklyHolidays)")
+                    Text(holidayText)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                         .font(.system(size: 12))
@@ -100,7 +130,26 @@ struct SInsightCard: View {
                         .lineSpacing(4)
                 }
                 
-                // Download PDF (smaller width)
+                ZStack(alignment: .center) {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.testBg)
+                        .frame(height: 80)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(.gray.opacity(0.45), lineWidth: 1)
+                        )
+                    
+                    Text("Active Days: \(routineManager.dailyClassCounts.filter { $0.totalClasses > 0 }.count)")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 8)
+                        .lineSpacing(4)
+                }
+                
+                    // Download PDF (smaller width)
                 ZStack {
                     Button(action: {
                             // Download Code
@@ -131,7 +180,6 @@ struct SInsightCard: View {
                     }
                 }
             }
-            
         }
         .lineLimit(1)
         .padding(15)
@@ -141,9 +189,29 @@ struct SInsightCard: View {
                 .shadow(color: .gray.opacity(0.75), radius: 2)
         }
     }
+    
+    
+    var holidayText: String {
+        let allDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+        let activeDays = Set(routineManager.filteredAndGroupedRoutines.keys.filter { day in
+            if let routines = routineManager.filteredAndGroupedRoutines[day] {
+                return !routines.isEmpty
+            }
+            return false
+        })
+        
+        let holidayDays = allDays.filter { !activeDays.contains($0) }
+        
+        if holidayDays.isEmpty {
+            return "No Holidays"
+        } else if holidayDays.count > 3 {
+            return "\(holidayDays.count) Holidays"
+        } else {
+            return "Holidays: \(holidayDays.joined(separator: ", "))"
+        }
+    }
 }
 
-
 #Preview {
-    SInsightCard()
+    SInsightCard(routineManager: RoutineManager())
 }
