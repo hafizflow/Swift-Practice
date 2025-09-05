@@ -149,8 +149,7 @@ struct Student: View {
                         tabType: $tabType,
                         currentWeek: $currentWeek,
                         selectedDate: $selectedDate,
-                        showAlert: $showAlert,
-                        isScrolledDown: $isScrolledDown
+                        showAlert: $showAlert
                     )
                     .environmentObject(routineManager)  // Pass the manager
                     .onAppear {

@@ -30,8 +30,7 @@ struct EmptyRoom: View {
                 tabType: $tabType,
                 currentWeek: $currentWeek,
                 selectedDate: $selectedDate,
-                showAlert: $showAlert,
-                isScrolledDown: $isScrolledDown)
+                showAlert: $showAlert)
                     .onAppear {
                             // Setting up initial Selection Date
                         guard selectedDate == nil else { return }

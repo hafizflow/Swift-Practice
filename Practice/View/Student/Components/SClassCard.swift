@@ -60,6 +60,7 @@ struct SClassCard: View {
                                     .brightness(-0.2)
                             }
                             .buttonStyle(.plain)
+                            .contentShape(Rectangle())
                         }
                     }
                     

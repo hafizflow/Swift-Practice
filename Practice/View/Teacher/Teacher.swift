@@ -70,7 +70,7 @@ struct Teacher: View {
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
             } else {
                 TabView(selection: $activeTab) {
-                    RoutineView(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert, isScrolledDown: $isScrolledDown)
+                    RoutineView(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
                         .onAppear {
                                 // Setting up initial Selection Date
                             guard selectedDate == nil else { return }
