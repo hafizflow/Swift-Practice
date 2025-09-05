@@ -78,13 +78,15 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
-                .onTapGesture {
-                        // Only dismiss if not tapping on search bar
-                    if isSearching {
-                        isSearching = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
-                }
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            if isSearching {
+                                isSearching = false
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            }
+                        }
+                )
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -124,13 +126,15 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
-                .onTapGesture {
-                        // Only dismiss if not tapping on search bar
-                    if isSearching {
-                        isSearching = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
-                }
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            if isSearching {
+                                isSearching = false
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            }
+                        }
+                )
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -182,13 +186,16 @@ struct Student: View {
                 }
                 .background(.testBg)
                 .contentShape(Rectangle())
-                .onTapGesture {
-                        // Only dismiss if not tapping on search bar
-                    if isSearching {
-                        isSearching = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    }
-                }
+                .simultaneousGesture(
+                    TapGesture()
+                        .onEnded { _ in
+                            if isSearching {
+                                isSearching = false
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            }
+                        }
+                )
+                
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
