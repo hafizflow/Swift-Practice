@@ -159,59 +159,54 @@ class RoutineManager: ObservableObject {
             return dayString.count >= 3 ? String(dayString.prefix(3)).uppercased() : dayString.uppercased()
         })
         
-        let timeOrder = ["08:30", "10:00", "11:30", "01:00", "02:30", "04:00"]
         var result: [String: [MergedRoutine]] = [:]
         
+        
         for (day, routinesForDay) in grouped {
-            let sorted = routinesForDay.sorted { first, second in
-                let start1 = first.startTime
-                let start2 = second.startTime
-                return (timeOrder.firstIndex(of: start1) ?? Int.max) < (timeOrder.firstIndex(of: start2) ?? Int.max)
+                // Group by courseCode + teacher only
+            let groupedByClass = Dictionary(grouping: routinesForDay) { routine in
+                ClassGroupKey(
+                    courseCode: routine.courseCode ?? "Unknown",
+                    teacher: routine.teacher ?? "Unknown"
+                )
             }
             
             var mergedRoutines: [MergedRoutine] = []
-            var current: MergedRoutine?
             
-            for routine in sorted {
-                let newRoutine = MergedRoutine(
-                    courseCode: routine.courseCode ?? "Unknown",
-                    section: routine.section ?? "",
-                    room: routine.room,
-                    teacher: routine.teacher ?? "Unknown",
-                    startTime: routine.startTime,
-                    endTime: routine.endTime,
-                    day: routine.day
-                )
+            for (key, routinesOfSame) in groupedByClass {
+                let courseCode = key.courseCode
+                let teacher = key.teacher
                 
-                if let ongoing = current {
-                    if ongoing.courseCode == newRoutine.courseCode &&
-                        ongoing.room == newRoutine.room &&
-                        ongoing.teacher == newRoutine.teacher &&
-                        ongoing.endTime == newRoutine.startTime {
-                        current = MergedRoutine(
-                            courseCode: ongoing.courseCode,
-                            section: ongoing.section,
-                            room: ongoing.room,
-                            teacher: ongoing.teacher,
-                            startTime: ongoing.startTime,
-                            endTime: newRoutine.endTime,
-                            day: ongoing.day
-                        )
-                    } else {
-                        mergedRoutines.append(ongoing)
-                        current = newRoutine
-                    }
-                } else {
-                    current = newRoutine
-                }
+                    // Sort routines by start time
+                let sorted = routinesOfSame.sorted { $0.startTime < $1.startTime }
+                
+                let startTime = sorted.first?.startTime ?? "00:00"
+                let endTime = sorted.last?.endTime ?? "00:00"
+                let section = sorted.first?.section ?? ""
+                let room = sorted.first?.room ?? "" // pick first room (since room is not part of the key)
+                
+                let merged = MergedRoutine(
+                    courseCode: courseCode,
+                    section: section,
+                    room: room,
+                    teacher: teacher,
+                    startTime: startTime,
+                    endTime: endTime,
+                    day: day
+                )
+                mergedRoutines.append(merged)
             }
             
-            if let ongoing = current {
-                mergedRoutines.append(ongoing)
+                // Sort by your predefined time order
+            let timeOrder = ["08:30", "10:00", "11:30", "01:00", "02:30", "04:00"]
+            mergedRoutines.sort { first, second in
+                (timeOrder.firstIndex(of: first.startTime) ?? Int.max) <
+                    (timeOrder.firstIndex(of: second.startTime) ?? Int.max)
             }
             
             result[day] = mergedRoutines
         }
+
         
         return result
     }
@@ -264,6 +259,11 @@ class RoutineManager: ObservableObject {
         guard let code = code, !code.isEmpty else { return nil }
         return teachers.first { $0.teacher?.uppercased() == code.uppercased() }
     }
+}
+
+struct ClassGroupKey: Hashable {
+    let courseCode: String
+    let teacher: String
 }
 
     // MARK: - Statistics Models

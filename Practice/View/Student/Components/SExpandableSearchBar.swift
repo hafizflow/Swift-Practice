@@ -55,7 +55,7 @@ struct SExpandableSearchBar: View {
                         ForEach(sectionSuggestions, id: \.self) { suggestion in
                             Button {
                                 searchText = suggestion
-                                performSearch()
+                                performSearchWithImmediateDismiss()  // 🔥 Changed to immediate dismiss
                             } label: {
                                 HStack {
                                     Text(suggestion)
@@ -80,16 +80,22 @@ struct SExpandableSearchBar: View {
                     }
                 }
                 .frame(
-                    maxHeight: min(CGFloat(sectionSuggestions.count) * 44, 160) // ✅ auto height with max cap
+                    maxHeight: min(CGFloat(sectionSuggestions.count) * 44, 160)
                 )
                 .background {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.mainBackground)
                         .stroke(.gray.opacity(0.4), lineWidth: 1)
                 }
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
                 .padding(.bottom, 5)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                .zIndex(1) // Ensure suggestions are above other content
+                .zIndex(1)
+                    // 🔥 CRITICAL: Block parent tap gestures from reaching suggestions
+                .onTapGesture { }
             }
             
                 // Main search bar
@@ -101,12 +107,18 @@ struct SExpandableSearchBar: View {
                             .padding(.horizontal, 24)
                             .focused($isTextFieldFocused)
                             .onSubmit {
-                                performSearch()
+                                performSearchWithImmediateDismiss()  // 🔥 Changed to immediate dismiss
                             }
                             .onChange(of: searchText) { _, newValue in
                                     // Only update suggestions, no real-time search
                                 showSuggestions = !newValue.isEmpty && !sectionSuggestions.isEmpty
                             }
+                            // 🔥 CRITICAL: Prevent parent gestures from affecting text field
+                            .onTapGesture {
+                                    // Force focus when tapping the text field
+                                isTextFieldFocused = true
+                            }
+                        
                         Spacer()
                         
                         DropdownMenu(dropdownAlignment: .center, fromTop: true, options: [
@@ -114,6 +126,8 @@ struct SExpandableSearchBar: View {
                             DropdownOption(title: "SWE", action: {}),
                         ])
                         .offset(x: -10)
+                            // 🔥 CRITICAL: Block parent tap gestures from reaching dropdown
+                        .onTapGesture { }
                     }
                 }
                 
@@ -124,7 +138,7 @@ struct SExpandableSearchBar: View {
                     .overlay(alignment: .trailing) {
                         Button {
                             if isSearching {
-                                performSearch()
+                                performSearchWithImmediateDismiss()  // 🔥 Changed to immediate dismiss
                             } else {
                                     // Just expand the search bar
                                 withAnimation {
@@ -141,6 +155,10 @@ struct SExpandableSearchBar: View {
             .background {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.mainBackground)
+            }
+                // 🔥 CRITICAL: Block parent tap gestures from reaching the entire search bar
+            .onTapGesture {
+                    // Do nothing - this blocks the parent gesture
             }
         }
         .padding(.horizontal, 20)
@@ -162,11 +180,28 @@ struct SExpandableSearchBar: View {
                 showSuggestions = false
             }
         }
-        .onTapGesture {
-            if showSuggestions {
-                showSuggestions = false
-            }
+    }
+    
+        // 🔥 NEW: Immediate dismiss function
+    private func performSearchWithImmediateDismiss() {
+        let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !trimmedText.isEmpty else {
+                // Don't close search if text is empty
+            return
         }
+        
+            // 🔥 IMMEDIATE: Dismiss keyboard and UI first
+        isTextFieldFocused = false
+        showSuggestions = false
+        isSearching = false
+        
+            // Hide keyboard immediately
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        
+            // 🔥 THEN: Update the manager with the search (after UI dismisses)
+        let upperCaseSection = trimmedText.uppercased()
+        manager.selectedSection = upperCaseSection
     }
     
     private func performSearch() {
@@ -181,12 +216,17 @@ struct SExpandableSearchBar: View {
         let upperCaseSection = trimmedText.uppercased()
         manager.selectedSection = upperCaseSection
         
+            // Hide keyboard
+        isTextFieldFocused = false
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        
             // Close the search bar and hide suggestions
         withAnimation {
             isSearching = false
             showSuggestions = false
         }
     }
+    
 }
 
 #Preview {

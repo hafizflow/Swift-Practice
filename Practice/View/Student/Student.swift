@@ -78,15 +78,6 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded { _ in
-                            if isSearching {
-                                isSearching = false
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
-                        }
-                )
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -126,15 +117,6 @@ struct Student: View {
                     searchBarOverlay
                 }
                 .background(.testBg)
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded { _ in
-                            if isSearching {
-                                isSearching = false
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
-                        }
-                )
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -186,16 +168,6 @@ struct Student: View {
                 }
                 .background(.testBg)
                 .contentShape(Rectangle())
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded { _ in
-                            if isSearching {
-                                isSearching = false
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }
-                        }
-                )
-                
                 .clipShape(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 30,
@@ -209,7 +181,17 @@ struct Student: View {
             }
         }
         .background(.mainBackground)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)        
+        .gesture(
+            TapGesture()
+                .onEnded { _ in
+                    if isSearching {
+                        isSearching = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                },
+            including: isSearching ? .all : .subviews  // 👈 Only consume all taps when searching
+        )
         .fullScreenCover(isPresented: $showSettings) {
             SettingsView(isPresented: $showSettings)
         }
