@@ -2,13 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct Student: View {
-    @Environment(\.modelContext) private var context
-    @Query private var routines: [RoutineModel]
-    @Query private var courses: [CourseModel]
-    @Query private var teachers: [TeacherModel]
-    
     @Binding var showAlert: Bool
     @Binding var isSearching: Bool
+    
+        // Get the routine manager from environment (passed from Home)
+    @EnvironmentObject private var routineManager: RoutineManager
     
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
@@ -16,11 +14,7 @@ struct Student: View {
     @State private var activeTab: StudentTab = .routine
     @State private var tabType: tabType = .isStudent
     
-        // Data managers
-    @StateObject private var routineManager = RoutineManager()
-    @StateObject private var dataManager = DataManager()
-    
-        // Data state - now based on actual search results
+        // Data state - based on actual search results
     private var hasData: Bool {
         return !routineManager.selectedSection.isEmpty && !routineManager.filteredRoutinesWithDetails.isEmpty
     }
@@ -33,9 +27,6 @@ struct Student: View {
     @State private var showSettings: Bool = false
     @State private var isScrolledDown: Bool = false
     @State private var showMonthRoutineStudent: Bool = false
-    
-    
-//    @State private var monthRoutineView: SMonthRoutine?
     
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
@@ -89,6 +80,7 @@ struct Student: View {
                         style: .continuous
                     )
                 )
+//                .ignoresSafeArea(.all, edges: .bottom)
                 
             } else if hasSearched && !hasData {
                     // No results found for searched section
@@ -128,7 +120,6 @@ struct Student: View {
                         style: .continuous
                     )
                 )
-                
             } else {
                     // Actual Routine & Insights (has data)
                 TabView(selection: $activeTab) {
@@ -139,7 +130,7 @@ struct Student: View {
                         selectedDate: $selectedDate,
                         showAlert: $showAlert
                     )
-                    .environmentObject(routineManager)  // Pass the manager
+                    .environmentObject(routineManager)
                     .onAppear {
                             // Setting up initial Selection Date
                         guard selectedDate == nil else { return }
@@ -179,11 +170,10 @@ struct Student: View {
                         style: .continuous
                     )
                 )
-                .ignoresSafeArea(.all, edges: .bottom)
             }
         }
         .background(.mainBackground)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)        
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .gesture(
             TapGesture()
                 .onEnded { _ in
@@ -192,7 +182,7 @@ struct Student: View {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 },
-            including: isSearching ? .all : .subviews  // 👈 Only consume all taps when searching
+            including: isSearching ? .all : .subviews
         )
         .fullScreenCover(isPresented: $showSettings) {
             SettingsView(isPresented: $showSettings)
@@ -200,28 +190,6 @@ struct Student: View {
         .fullScreenCover(isPresented: $showMonthRoutineStudent) {
             SMonthRoutine(showMonthRoutineStudent: $showMonthRoutineStudent)
                 .environmentObject(routineManager)
-        }
-        .task {
-            if !dataManager.loaded {
-                await dataManager.loadRoutine(context: context, existingRoutines: routines)
-                await dataManager.loadCourse(context: context, existingCourses: courses)
-                await dataManager.loadTeacher(context: context, existingTeachers: teachers)
-                dataManager.loaded = true
-                
-                    // Update routine manager with loaded data
-                routineManager.routines = routines
-                routineManager.courses = courses
-                routineManager.teachers = teachers
-            }
-        }
-        .onChange(of: routines) { _, newRoutines in
-            routineManager.routines = newRoutines
-        }
-        .onChange(of: courses) { _, newCourses in
-            routineManager.courses = newCourses
-        }
-        .onChange(of: teachers) { _, newTeachers in
-            routineManager.teachers = newTeachers
         }
     }
     
@@ -244,4 +212,5 @@ struct Student: View {
         showAlert: .constant(false),
         isSearching: .constant(false)
     )
+    .environmentObject(RoutineManager())
 }

@@ -2,12 +2,10 @@ import SwiftUI
 import SwiftData
 
 struct Teacher: View {
-    @Environment(\.modelContext) private var context
-    @Query private var routines: [RoutineModel]
-    @Query private var courses: [CourseModel]
-    @Query private var teachers: [TeacherModel]
-    
     @Binding var isSearching: Bool
+    
+        // Get the teacher manager from environment (passed from Home)
+    @EnvironmentObject private var teacherManager: TeacherManager
     
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
@@ -16,11 +14,7 @@ struct Teacher: View {
     @State private var activeTab: TeacherTab = .routine
     @State private var showAlert: Bool = false
     
-        // Data managers
-    @StateObject private var teacherManager = TeacherManager()
-    @StateObject private var dataManager = DataManager()
-    
-        // Data state - now based on actual search results
+        // Data state - based on actual search results
     private var hasData: Bool {
         return !teacherManager.selectedTeacher.isEmpty && !teacherManager.filteredRoutinesWithDetails.isEmpty
     }
@@ -135,7 +129,7 @@ struct Teacher: View {
                         selectedDate: $selectedDate,
                         showAlert: $showAlert
                     )
-                    .environmentObject(teacherManager) // Pass the teacher manager
+                    .environmentObject(teacherManager)
                     .onAppear {
                             // Setting up initial Selection Date
                         guard selectedDate == nil else { return }
@@ -176,7 +170,6 @@ struct Teacher: View {
                         style: .continuous
                     )
                 )
-                .ignoresSafeArea(.all, edges: .bottom)
             }
         }
         .background(.mainBackground)
@@ -189,7 +182,7 @@ struct Teacher: View {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 },
-            including: isSearching ? .all : .subviews 
+            including: isSearching ? .all : .subviews
         )
         .fullScreenCover(isPresented: $showSettings) {
             SettingsView(isPresented: $showSettings)
@@ -197,28 +190,6 @@ struct Teacher: View {
         .fullScreenCover(isPresented: $showMonthRoutineFaculty) {
             TMonthRoutine(showMonthRoutineFaculty: $showMonthRoutineFaculty)
                 .environmentObject(teacherManager)
-        }
-        .task {
-            if !dataManager.loaded {
-                await dataManager.loadRoutine(context: context, existingRoutines: routines)
-                await dataManager.loadCourse(context: context, existingCourses: courses)
-                await dataManager.loadTeacher(context: context, existingTeachers: teachers)
-                dataManager.loaded = true
-                
-                    // Update teacher manager with loaded data
-                teacherManager.routines = routines
-                teacherManager.courses = courses
-                teacherManager.teachers = teachers
-            }
-        }
-        .onChange(of: routines) { _, newRoutines in
-            teacherManager.routines = newRoutines
-        }
-        .onChange(of: courses) { _, newCourses in
-            teacherManager.courses = newCourses
-        }
-        .onChange(of: teachers) { _, newTeachers in
-            teacherManager.teachers = newTeachers
         }
     }
     
@@ -238,4 +209,5 @@ struct Teacher: View {
 
 #Preview {
     Teacher(isSearching: .constant(false))
+        .environmentObject(TeacherManager())
 }
