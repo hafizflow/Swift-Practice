@@ -54,8 +54,9 @@ struct SExpandableSearchBar: View {
                     VStack(spacing: 0) {
                         ForEach(sectionSuggestions, id: \.self) { suggestion in
                             Button {
-                                searchText = suggestion
-                                performSearchWithImmediateDismiss()  // 🔥 Changed to immediate dismiss
+                                    searchText = suggestion
+                                    performSearchWithImmediateDismiss()  // 🔥 Changed to immediate dismiss
+                                
                             } label: {
                                 HStack {
                                     Text(suggestion)

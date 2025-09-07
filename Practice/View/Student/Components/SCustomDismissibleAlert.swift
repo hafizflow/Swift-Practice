@@ -1,23 +1,25 @@
 import SwiftUI
 
-struct ContactInfo {
-    let name: String
-    let designation: String
-    let phone: String
-    let email: String
-    let room: String
+
+@MainActor
+    // MARK: - ObservableObject for Global Contact State
+class ContactManager: ObservableObject {
+    @Published var contact = TContactInfo(
+        name: "",
+        teacher: "",
+        designation: "",
+        phone: "",
+        email: "",
+        room: "",
+        image: ""
+    )
 }
 
-struct CustomDismissibleAlert: View {
+
+    // MARK: - Custom Dismissible Alert
+struct SCustomDismissibleAlert: View {
     @Binding var isPresented: Bool
-    
-    let contact = ContactInfo(
-        name: "Hafizur Rahman - HR",
-        designation: "Lecturer",
-        phone: "01736692184",
-        email: "rahman15-5678@diu.edu.bd",
-        room: "Unknown"
-    )
+    @EnvironmentObject var manager: ContactManager
     
     var body: some View {
         ZStack {
@@ -30,7 +32,7 @@ struct CustomDismissibleAlert: View {
             VStack {
                 VStack(alignment: .leading, spacing: 12) {
                         // Name
-                    Text(contact.name)
+                    Text(manager.contact.name)
                         .lineLimit(1)
                         .font(.system(size: 20))
                         .fontWeight(.bold)
@@ -38,56 +40,51 @@ struct CustomDismissibleAlert: View {
                         .brightness(-0.2)
                     
                         // Designation
-                    HStack (alignment: .center, spacing: 0){
+                    HStack(spacing: 0) {
                         Text("Desig: ")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Text(contact.designation)
+                        Text(manager.contact.designation)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
                     }
                     
-                    HStack (alignment: .center, spacing: 0){
+                        // Phone with copy
+                    HStack(spacing: 0) {
                         Text("Phone: ")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Link(contact.phone, destination: URL(string: "tel:\(contact.phone)")!)
+                        Link(manager.contact.phone, destination: URL(string: "tel:\(manager.contact.phone)")!)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.teal.opacity(0.8))
                         
                         Spacer()
                         
-                            // Copy button for cell number
-                        Button(action: {
-                                // Copy cell number to clipboard
-                            UIPasteboard.general.string = contact.phone
+                        Button {
+                            UIPasteboard.general.string = manager.contact.phone
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
-                        }) {
-                                // SF Symbol for copy button
+                        } label: {
                             Image(systemName: "square.on.square")
                                 .foregroundColor(.teal.opacity(0.9))
                                 .font(.system(size: 16))
                         }
-                        
-                        
                     }
                     
-                    
-                        // Email with copy functionality
-                    HStack (alignment: .center, spacing: 0){
+                        // Email with copy
+                    HStack(spacing: 0) {
                         Text("Email: ")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Text(AttributedString(stringLiteral: contact.email))
+                        Text(AttributedString(stringLiteral: manager.contact.email))
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
@@ -95,29 +92,25 @@ struct CustomDismissibleAlert: View {
                         
                         Spacer()
                         
-                            // Copy button for email
-                        Button(action: {
-                                // Copy email address to clipboard
-                            UIPasteboard.general.string = contact.email
+                        Button {
+                            UIPasteboard.general.string = manager.contact.email
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
-                        }) {
-                                // SF Symbol for copy button
+                        } label: {
                             Image(systemName: "square.on.square")
                                 .foregroundColor(.teal.opacity(0.9))
                                 .font(.system(size: 16))
                         }
                     }
                     
-                    
                         // Room
-                    HStack (alignment: .center, spacing: 0){
+                    HStack(spacing: 0) {
                         Text("Room: ")
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Text("Unknown")
+                        Text(manager.contact.room)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
@@ -125,7 +118,7 @@ struct CustomDismissibleAlert: View {
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity)
-                .background(.mainBackground)
+                .background(Color("mainBackground")) // replace with your color
                 .cornerRadius(12)
                 .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 2)
             }
@@ -141,53 +134,28 @@ struct CustomDismissibleAlert: View {
 }
 
 
-    // MARK: - Usage Example
-struct ContentView: View {
-    @State private var showAlert = true
-    
-    var body: some View {
-        ZStack {
-            VStack {
-                Button("Show Alert") {
-                    showAlert = true
-                }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            
-                // Custom Alert Overlay
-            if showAlert {
-                CustomDismissibleAlert(isPresented: $showAlert)
-            }
-        }
-    }
-}
-
     // Alternative implementation with ViewModifier for reusability
-struct CustomAlertModifier: ViewModifier {
+struct SCustomAlertModifier: ViewModifier {
     @Binding var isPresented: Bool
     
     func body(content: Content) -> some View {
         ZStack {
             content
-            
             if isPresented {
-                CustomDismissibleAlert(isPresented: $isPresented)
+                SCustomDismissibleAlert(isPresented: $isPresented)
             }
         }
     }
 }
 
 extension View {
-    func customAlert(isPresented: Binding<Bool>) -> some View {
-        self.modifier(CustomAlertModifier(isPresented: isPresented))
+    func ScustomAlert(isPresented: Binding<Bool>) -> some View {
+        self.modifier(SCustomAlertModifier(isPresented: isPresented))
     }
 }
 
     //     Example using the ViewModifier
-struct ExampleView: View {
+struct SExampleView: View {
     @State private var showAlert = false
     
     var body: some View {
@@ -200,25 +168,10 @@ struct ExampleView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
         }
-        .customAlert(isPresented: $showAlert)
-    }
-}
-
-    // Wrapper for UIVisualEffectView to create a blur effect
-struct BlurView: UIViewRepresentable {
-    let style: UIBlurEffect.Style
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        let blurEffect = UIBlurEffect(style: style)
-        let blurView = UIVisualEffectView(effect: blurEffect)
-        return blurView
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: style)
+        .ScustomAlert(isPresented: $showAlert)
     }
 }
 
 #Preview {
-    ExampleView()
+    SExampleView()
 }

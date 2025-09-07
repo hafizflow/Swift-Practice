@@ -1,24 +1,43 @@
 import SwiftUI
+import SwiftData
 
 struct Teacher: View {
+    @Environment(\.modelContext) private var context
+    @Query private var routines: [RoutineModel]
+    @Query private var courses: [CourseModel]
+    @Query private var teachers: [TeacherModel]
     
     @Binding var isSearching: Bool
+    
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var tabType: tabType = .isTeacher
     @State private var selectedDate: Date?
-        // For Matched Geometry Effect
-    @Namespace private var namespace
     @State private var activeTab: TeacherTab = .routine
     @State private var showAlert: Bool = false
-    var haveData: Bool = false
     
+        // Data managers
+    @StateObject private var teacherManager = TeacherManager()
+    @StateObject private var dataManager = DataManager()
+    
+        // Data state - now based on actual search results
+    private var hasData: Bool {
+        return !teacherManager.selectedTeacher.isEmpty && !teacherManager.filteredRoutinesWithDetails.isEmpty
+    }
+    
+    private var hasSearched: Bool {
+        return !teacherManager.selectedTeacher.isEmpty
+    }
+    
+        // Settings sheet state
     @State private var showSettings = false
     @State private var isScrolledDown = false
     @State private var showMonthRoutineFaculty: Bool = false
     
     var body: some View {
-        VStack(alignment: .center, spacing: 0){
+        VStack(alignment: .center, spacing: 0) {
+            
+                // Header always visible
             VStack(alignment: .leading, spacing: 12) {
                 TeacherHeaderView(
                     currentWeek: $currentWeek,
@@ -26,7 +45,7 @@ struct Teacher: View {
                     showSettings: $showSettings
                 )
                 
-                if !haveData {
+                if hasData {
                     TeacherTabBar(
                         activeTab: $activeTab,
                         selectedDate: $selectedDate,
@@ -39,7 +58,9 @@ struct Teacher: View {
             }
             .environment(\.colorScheme, .dark)
             
-            if haveData {
+                // Content based on search state
+            if !hasSearched {
+                    // Empty state (no teacher searched yet)
                 VStack {
                     LottieAnimation(animationName: "discover.json")
                         .frame(maxWidth: .infinity , maxHeight: 250)
@@ -52,42 +73,83 @@ struct Teacher: View {
                 }
                 .frame(maxWidth: .infinity , maxHeight: .infinity)
                 .overlay(alignment: .bottomTrailing) {
-                    ZStack(alignment: .bottomTrailing) {
-                        if isSearching {
-                            Color.black.opacity(0.001)
-                                .ignoresSafeArea()
-                                .onTapGesture {
-                                    isSearching = false
-                                }
-                                .zIndex(1)
-                        }
-                        
-                        TExpandableSearchBar(isSearching: $isSearching)
-                            .zIndex(2)
-                    }
+                    searchBarOverlay
                 }
                 .background(.testBg)
-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
-            } else {
-                TabView(selection: $activeTab) {
-                    RoutineView(tabType: $tabType, currentWeek: $currentWeek, selectedDate: $selectedDate, showAlert: $showAlert)
-                        .onAppear {
-                                // Setting up initial Selection Date
-                            guard selectedDate == nil else { return }
-                                // Today's Data
-                            selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
-                        }
-                        .tag(TeacherTab.routine)
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: 30,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 30,
+                        style: .continuous
+                    )
+                )
+                
+            } else if hasSearched && !hasData {
+                    // No results found for searched teacher
+                VStack(spacing: 20) {
+                    LottieAnimation(animationName: "medi.json")
+                        .frame(maxWidth: .infinity , maxHeight: 250)
+                        .padding(.horizontal, 30)
                     
+                    Text("No Classes Found")
+                        .foregroundStyle(.white.opacity(0.9))
+                        .fontWeight(.medium)
+                    
+                    Text("No classes found for teacher '\(teacherManager.selectedTeacher)'")
+                        .foregroundStyle(.gray)
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                    
+                    Button("Try Different Teacher") {
+                        teacherManager.selectedTeacher = ""
+                        isSearching = true
+                    }
+                    .foregroundColor(.teal)
+                    .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity , maxHeight: .infinity)
+                .overlay(alignment: .bottomTrailing) {
+                    searchBarOverlay
+                }
+                .background(.testBg)
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: 30,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 30,
+                        style: .continuous
+                    )
+                )
+                
+            } else {
+                    // Actual Routine & Insights (has data)
+                TabView(selection: $activeTab) {
+                    
+                    RoutineView(
+                        tabType: $tabType,
+                        currentWeek: $currentWeek,
+                        selectedDate: $selectedDate,
+                        showAlert: $showAlert
+                    )
+                    .environmentObject(teacherManager) // Pass the teacher manager
+                    .onAppear {
+                            // Setting up initial Selection Date
+                        guard selectedDate == nil else { return }
+                        selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
+                    }
+                    .tag(TeacherTab.routine)
                     
                     ScrollView(.vertical) {
-                        TInsightCard()
+                        TInsightCard(teacherManager: teacherManager)
+                            .environmentObject(teacherManager)
                             .padding(20)
                             .padding(.bottom, 100)
                     }
                     .tag(TeacherTab.insights)
-                    
-                    
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .overlay(alignment: .bottomTrailing) {
@@ -100,48 +162,77 @@ struct Teacher: View {
                             .zIndex(shouldHideCalendarButton ? 0 : 1)
                             .disabled(shouldHideCalendarButton)
                         
-                        ZStack {
-                            if activeTab == .routine {
-                                TExpandableSearchBar(isSearching: $isSearching)
-                                    .zIndex(2)
-                            } else {
-                                TeacherSearchButton()
-                                    .transition(
-                                        .asymmetric(insertion: .scale.combined(with: .opacity),
-                                                    removal: .scale.combined(with: .opacity))
-                                    )
-                            }
-                        }
-                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: activeTab)
+                        searchBarOverlay
                     }
                 }
                 .background(.testBg)
-                .contentShape(Rectangle()) // ensures taps are registered anywhere
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        if isSearching {
-                            isSearching = false
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
-                    }
+                .contentShape(Rectangle())
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: 30,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 30,
+                        style: .continuous
+                    )
                 )
-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 30, style: .continuous))
                 .ignoresSafeArea(.all, edges: .bottom)
             }
         }
         .background(.mainBackground)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .gesture(
+            TapGesture()
+                .onEnded { _ in
+                    if isSearching {
+                        isSearching = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                },
+            including: isSearching ? .all : .subviews 
+        )
         .fullScreenCover(isPresented: $showSettings) {
             SettingsView(isPresented: $showSettings)
         }
         .fullScreenCover(isPresented: $showMonthRoutineFaculty) {
             TMonthRoutine(showMonthRoutineFaculty: $showMonthRoutineFaculty)
+                .environmentObject(teacherManager)
+        }
+        .task {
+            if !dataManager.loaded {
+                await dataManager.loadRoutine(context: context, existingRoutines: routines)
+                await dataManager.loadCourse(context: context, existingCourses: courses)
+                await dataManager.loadTeacher(context: context, existingTeachers: teachers)
+                dataManager.loaded = true
+                
+                    // Update teacher manager with loaded data
+                teacherManager.routines = routines
+                teacherManager.courses = courses
+                teacherManager.teachers = teachers
+            }
+        }
+        .onChange(of: routines) { _, newRoutines in
+            teacherManager.routines = newRoutines
+        }
+        .onChange(of: courses) { _, newCourses in
+            teacherManager.courses = newCourses
+        }
+        .onChange(of: teachers) { _, newTeachers in
+            teacherManager.teachers = newTeachers
         }
     }
     
-    // Computed property for cleaner logic
+        // Computed property for cleaner logic
     private var shouldHideCalendarButton: Bool {
         return isSearching || isScrolledDown
+    }
+    
+        // Reusable search bar overlay
+    private var searchBarOverlay: some View {
+        ZStack(alignment: .bottomTrailing) {
+            TExpandableSearchBar(isSearching: $isSearching)
+                .environmentObject(teacherManager)
+        }
     }
 }
 

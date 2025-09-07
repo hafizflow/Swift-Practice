@@ -6,6 +6,8 @@ struct SMonthRoutine: View {
     @State private var currentMonth = Date()
     @State private var selectedDate: Date?
     
+    @EnvironmentObject var routineManager: RoutineManager
+    
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 0) {
@@ -78,7 +80,8 @@ struct SMonthRoutine: View {
                         // Calendar Grid with Swipe Gestures
                     CalendarGridView(
                         currentMonth: $currentMonth,
-                        selectedDate: $selectedDate
+                        selectedDate: $selectedDate,
+                        routineManager: routineManager
                     )
                     .gesture(
                         DragGesture()
@@ -109,17 +112,71 @@ struct SMonthRoutine: View {
                 .padding(.bottom, 20)
                 .padding(.horizontal, 20)
                 
+                    // Classes for selected date
                 ScrollView {
-                        // CLASS CARD
-                    VStack {
-                        ForEach(0..<5, id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(.gray.opacity(0.2))
-                                .frame(height: 80)
-                                .padding(.horizontal, 4)
+                    if let selectedDate = selectedDate {
+                        let dayKey = getDayKey(for: selectedDate)
+                        let routines = routineManager.filteredRoutinesWithDetails[dayKey] ?? []
+                        
+                        if !routines.isEmpty {
+                            VStack(spacing: 12) {
+                                    // Date header
+                                HStack {
+                                    Text(selectedDate.string("EEEE, dd"))
+                                        .font(.title3.bold())
+                                        .foregroundStyle(.white)
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(routines.count) class\(routines.count != 1 ? "es" : "")")
+                                        .font(.caption)
+                                        .foregroundStyle(.gray)
+                                }
+                                .padding(.bottom, 8)
+                                
+                                    // Class cards
+                                ForEach(routines) { routine in
+                                    MonthClassCard(routine: routine)
+                                }
+                            }
+                        } else {
+                                // No classes on this day
+                            VStack(spacing: 12) {
+                                Text(selectedDate.string("EEEE, dd"))
+                                    .font(.title3.bold())
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.bottom, 8)
+                                
+                                VStack(spacing: 8) {
+                                    Text("No Classes")
+                                        .font(.title3.bold())
+                                        .foregroundStyle(.white.opacity(0.8))
+                                    
+                                    Text("Free day!")
+                                        .font(.caption)
+                                        .foregroundStyle(.gray)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 100)
+                                .background(.gray.opacity(0.3))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
                         }
+                    } else {
+                            // No date selected
+                        VStack {
+                            Text("Select a Date")
+                                .font(.title3.bold())
+                                .foregroundStyle(.white.opacity(0.8))
+                            
+                            Text("Tap on a date to view classes")
+                                .font(.caption)
+                                .foregroundStyle(.gray)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 100)
                     }
-                    .padding(.bottom, 20)
                 }
                 .contentMargins(.all, 20, for: .scrollContent)
                 .contentMargins(.vertical, 20, for: .scrollIndicators)
@@ -128,10 +185,22 @@ struct SMonthRoutine: View {
             .background(.mainBackground)
         }
         .navigationBarHidden(true)
+        .onAppear {
+                // Set initial selection to today if no date selected
+            if selectedDate == nil {
+                selectedDate = Date()
+            }
+        }
     }
     
+        // Helper to get day key from date
+    private func getDayKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: date).uppercased()
+    }
     
-    // Computed properties to your view:
+        // Computed properties
     private var isPastLimit: Bool {
         let fourMonthsAgo = Calendar.current.date(byAdding: .month, value: -4, to: Date()) ?? Date()
         return currentMonth <= fourMonthsAgo
@@ -146,10 +215,6 @@ struct SMonthRoutine: View {
         Calendar.current.isDate(currentMonth, equalTo: Date(), toGranularity: .month)
     }
     
-    private var canGoToPreviousMonth: Bool {
-        !isCurrentMonth
-    }
-    
     private func monthYearString(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
@@ -157,18 +222,12 @@ struct SMonthRoutine: View {
     }
 }
 
-
-
 struct CalendarGridView: View {
     @Binding var currentMonth: Date
     @Binding var selectedDate: Date?
+    let routineManager: RoutineManager
     
     private let calendar = Calendar.current
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter
-    }()
     
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
@@ -189,7 +248,8 @@ struct CalendarGridView: View {
                         isSelected: calendar.isDate(date, inSameDayAs: selectedDate ?? Date.distantPast),
                         isToday: calendar.isDate(date, inSameDayAs: Date()),
                         isCurrentMonth: calendar.isDate(date, equalTo: currentMonth, toGranularity: .month),
-                        isPastDate: isPastDate(date)
+                        isPastDate: isPastDate(date),
+                        hasClasses: hasClasses(on: date)
                     ) {
                             // Allow selection of all dates in current month or future dates
                         if calendar.isDate(date, equalTo: currentMonth, toGranularity: .month) || date >= calendar.startOfDay(for: Date()) {
@@ -233,6 +293,15 @@ struct CalendarGridView: View {
     private func isPastDate(_ date: Date) -> Bool {
         date < calendar.startOfDay(for: Date())
     }
+    
+    private func hasClasses(on date: Date) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+        let dayKey = formatter.string(from: date).uppercased()
+        
+        let routines = routineManager.filteredRoutinesWithDetails[dayKey] ?? []
+        return !routines.isEmpty
+    }
 }
 
 struct CalendarDayView: View {
@@ -241,18 +310,28 @@ struct CalendarDayView: View {
     let isToday: Bool
     let isCurrentMonth: Bool
     let isPastDate: Bool
+    let hasClasses: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Text("\(Calendar.current.component(.day, from: date))")
-                .font(.system(size: 16, weight: isToday ? .bold : .medium))
-                .foregroundStyle(textColor)
-                .frame(width: 40, height: 40)
-                .background(backgroundColor)
-                .clipShape(Circle())
-                .scaleEffect(isSelected ? 1.0 : 1.0)
-                .animation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0), value: isSelected)
+            ZStack {
+                Text("\(Calendar.current.component(.day, from: date))")
+                    .font(.system(size: 16, weight: isToday ? .bold : .medium))
+                    .foregroundStyle(textColor)
+                    .frame(width: 40, height: 40)
+                    .background(backgroundColor)
+                    .clipShape(Circle())
+                    .scaleEffect(isSelected ? 1.0 : 1.0)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0), value: isSelected)
+                
+                    // Teal circle indicator for days with classes
+                if hasClasses && isCurrentMonth && !isSelected {
+                    Circle()
+                        .stroke(.teal.opacity(0.8), lineWidth: 1.5)
+                        .frame(width: 40, height: 40)
+                }
+            }
         }
     }
     
@@ -274,13 +353,61 @@ struct CalendarDayView: View {
         if isSelected {
             return .teal.opacity(0.9)
         } else if isToday && !isSelected {
-            return .white.opacity(0.9)
+            return .gray.opacity(0.9)
         } else {
             return .clear
         }
     }
 }
 
-#Preview {
-    SMonthRoutine(showMonthRoutineStudent: .constant(true))
+    // Compact class card for month view
+struct MonthClassCard: View {
+    let routine: FilteredRoutine
+    
+    var body: some View {
+        HStack(spacing: 12) {
+                // Time
+            VStack(alignment: .leading, spacing: 2) {
+                Text(routine.startTime)
+                    .font(.caption.bold())
+                    .foregroundStyle(.teal.opacity(0.9))
+                Text(routine.endTime)
+                    .font(.caption2)
+                    .foregroundStyle(.gray)
+            }
+            .frame(width: 50, alignment: .leading)
+            
+                // Course info
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(routine.courseTitle)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .lineLimit(1)
+                
+                HStack(spacing: 8) {
+                    Text(routine.courseCode)
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                    
+                    Text("•")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                    
+                    Text(routine.teacher)
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                    
+                    Spacer()
+                    
+                    Text(routine.room)
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .padding(12)
+        .background(.gray.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
 }

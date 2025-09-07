@@ -10,10 +10,10 @@ struct Home: View {
     @State private var isSearchingExam: Bool = false
     
     
-    @Environment(\.modelContext) private var context
-    @Query private var routines: [RoutineModel]
-    @Query private var courses: [CourseModel]
-    @Query private var teachers: [TeacherModel]
+//    @Environment(\.modelContext) private var context
+//    @Query private var routines: [RoutineModel]
+//    @Query private var courses: [CourseModel]
+//    @Query private var teachers: [TeacherModel]
     
     @State private var inputSection: String = ""
     @State private var selectedSection: String = ""
@@ -26,6 +26,7 @@ struct Home: View {
         return .init(tab: tab)
     }
     
+    @State private var selectedTeacher: FilteredRoutine? = nil
     
     
     var body: some View {
@@ -53,15 +54,24 @@ struct Home: View {
             }
             CustomTabBar()
         }
-        .customAlert(isPresented: $showAlert)
-        .task {
-            if !manager.loaded {
-                await manager.loadRoutine(context: context, existingRoutines: routines)
-                await manager.loadCourse(context: context, existingCourses: courses)
-                await manager.loadTeacher(context: context, existingTeachers: teachers)
-                manager.loaded = true
-            }
-        }
+        .ScustomAlert(isPresented: $showAlert)
+//        .task {
+//            if !manager.loaded {
+//                await manager.loadRoutine(context: context, existingRoutines: routines)
+//                await manager.loadCourse(context: context, existingCourses: courses)
+//                await manager.loadTeacher(context: context, existingTeachers: teachers)
+//                manager.loaded = true
+//            }
+//        }
+//        .onChange(of: routines) { _, newRoutines in
+//            routineManager.routines = newRoutines
+//        }
+//        .onChange(of: courses) { _, newCourses in
+//            routineManager.courses = newCourses
+//        }
+//        .onChange(of: teachers) { _, newTeachers in
+//            routineManager.teachers = newTeachers
+//        }
     }
     
     

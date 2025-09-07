@@ -15,8 +15,10 @@ struct RoutineView: View {
     @State private var scale: CGFloat = 1.0
     @State private var opacity: Double = 1.0
     
-    @EnvironmentObject var manager: RoutineManager
+    @EnvironmentObject var studentManager: RoutineManager
+    @EnvironmentObject var teacherManager: TeacherManager
     
+
     var body: some View {
         GeometryReader { geometry in
             ScrollViewReader { proxy in
@@ -52,7 +54,6 @@ struct RoutineView: View {
     }
     
         // MARK: - Extracted Views for Better Performance
-    
     @ViewBuilder
     private func headerView(for selectedDay: Date.Day) -> some View {
         HStack(alignment: .center, spacing: 6) {
@@ -68,10 +69,22 @@ struct RoutineView: View {
             
             if tabType != .isEmptyRoom {
                 let dayKey = selectedDay.date.string("EEE").uppercased()
-                let routineCount = manager.filteredRoutinesWithDetails[dayKey]?.count ?? 0
-                Text("\(routineCount) class\(routineCount != 1 ? "es" : "")")
-                    .font(.title3.bold())
-                    .foregroundStyle(.gray)
+                let routineCount = studentManager.filteredRoutinesWithDetails[dayKey]?.count ?? 0
+                if routineCount > 0 {
+                    Text("\(routineCount) class\(routineCount != 1 ? "es" : "")")
+                        .font(.title3.bold())
+                        .foregroundStyle(.gray)
+                }
+            }
+            
+            if tabType != .isEmptyRoom {
+                let dayKey = selectedDay.date.string("EEE").uppercased()
+                let routineCount = teacherManager.filteredRoutinesWithDetails[dayKey]?.count ?? 0
+                if routineCount > 0 {
+                    Text("\(routineCount) class\(routineCount != 1 ? "es" : "")")
+                        .font(.title3.bold())
+                        .foregroundStyle(.gray)
+                }
             }
         }
         .frame(height: 65)
@@ -85,7 +98,7 @@ struct RoutineView: View {
                 case .isStudent:
                     studentClassesView(for: selectedDay)
                 case .isTeacher:
-                    teacherClassesView()
+                    teacherClassesView(for: selectedDay)
                 case .isEmptyRoom:
                     emptyRoomView()
             }
@@ -99,27 +112,29 @@ struct RoutineView: View {
     private func studentClassesView(for selectedDay: Date.Day) -> some View {
         let dayKey = selectedDay.date.string("EEE").uppercased()
         
-        if let routines = manager.filteredRoutinesWithDetails[dayKey], !routines.isEmpty {
+        if let routines = studentManager.filteredRoutinesWithDetails[dayKey], !routines.isEmpty {
             ForEach(routines) { routine in
                 SClassCard(routine: routine, showAlert: $showAlert)
-                    .transition(.asymmetric(
-                        insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                        removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
-                    ))
             }
         } else {
             SClassCard(routine: nil, showAlert: $showAlert)
                 .transition(.asymmetric(
-                    insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                    removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
+                    insertion: .scale(scale: 0.1).combined(with: .opacity).combined(with: .move(edge: .bottom)),
+                    removal: .scale(scale: 0.1).combined(with: .opacity).combined(with: .move(edge: .top))
                 ))
         }
     }
     
     @ViewBuilder
-    private func teacherClassesView() -> some View {
-        ForEach(0..<3, id: \.self) { index in
-            TClassCard()
+    private func teacherClassesView(for selectedDay: Date.Day) -> some View {
+        let dayKey = selectedDay.date.string("EEE").uppercased()
+        
+        if let routines = teacherManager.filteredRoutinesWithDetails[dayKey], !routines.isEmpty {
+            ForEach(routines) { routine in
+                TClassCard(routine: routine)
+            }
+        } else {
+            TClassCard(routine: nil)
                 .transition(.asymmetric(
                     insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
                     removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
@@ -148,15 +163,15 @@ struct RoutineView: View {
     private func animateContentTransition(proxy: ScrollViewProxy) {
             // Enhanced transition animation
         withAnimation(.easeInOut(duration: 0.15)) {
-            opacity = 0
-            scale = 0.92
+            opacity = 0.0
+            scale = 1
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
             withAnimation(.interactiveSpring(response: 0.6, dampingFraction: 0.75)) {
                 proxy.scrollTo("topContent", anchor: .top)
                 opacity = 1
-                scale = 1.0
+                scale = 1
             }
         }
     }
@@ -171,16 +186,3 @@ struct RoutineView: View {
     )
     .environmentObject(RoutineManager())
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

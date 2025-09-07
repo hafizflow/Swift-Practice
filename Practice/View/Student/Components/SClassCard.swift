@@ -2,8 +2,9 @@ import SwiftUI
 import Lottie
 
 struct SClassCard: View {
-    var routine: FilteredRoutine? = nil  
+    var routine: FilteredRoutine? = nil
     @Binding var showAlert: Bool
+    @EnvironmentObject var manager: ContactManager
     
     var body: some View {
         Group {
@@ -51,6 +52,15 @@ struct SClassCard: View {
                                 .foregroundStyle(.gray)
                             
                             Button(action: {
+                                manager.contact = TContactInfo(
+                                    name: routine.teacherName,
+                                    teacher: routine.teacher,
+                                    designation: routine.teacherDesignation,
+                                    phone: routine.teacherCell,
+                                    email: routine.teacherEmail,
+                                    room: routine.teacherRoom,
+                                    image: routine.teacherImage
+                                )
                                 showAlert = true
                             }) {
                                 Text(routine.teacher)
@@ -168,7 +178,8 @@ extension FilteredRoutine {
                 teacherCell: "01234",
                 teacherEmail: "mma@diu.edu",
                 teacherDesignation: "Professor",
-                teacherImage: ""
+                teacherImage: "",
+                teacherRoom: "Unkonwn"
             ),
             showAlert: .constant(false)
         )

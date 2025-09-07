@@ -14,7 +14,6 @@ struct Student: View {
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var selectedDate: Date?
     @State private var activeTab: StudentTab = .routine
-    var offSetObserve = PageOffsetObserver()
     @State private var tabType: tabType = .isStudent
     
         // Data managers
@@ -34,6 +33,9 @@ struct Student: View {
     @State private var showSettings: Bool = false
     @State private var isScrolledDown: Bool = false
     @State private var showMonthRoutineStudent: Bool = false
+    
+    
+//    @State private var monthRoutineView: SMonthRoutine?
     
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
@@ -197,6 +199,7 @@ struct Student: View {
         }
         .fullScreenCover(isPresented: $showMonthRoutineStudent) {
             SMonthRoutine(showMonthRoutineStudent: $showMonthRoutineStudent)
+                .environmentObject(routineManager)
         }
         .task {
             if !dataManager.loaded {

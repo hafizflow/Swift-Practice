@@ -2,28 +2,15 @@ import SwiftUI
 import Lottie
 
 struct TClassCard: View {
-    var isEmpty: Bool = false
+    var routine: TFilteredRoutine? = nil
     
     var body: some View {
         Group {
-            if isEmpty {
-                VStack(alignment: .center, spacing: 4) {
-                    LottieAnimation(animationName: "medi.json")
-                        .frame(maxWidth: .infinity, maxHeight: 250)
-                    Text("Looks like you've got a free day!")
-                        .foregroundStyle(.white.opacity(0.9))
-                        .padding(.horizontal, 16)
-                    Text("Take it easy and explore new opportunities!")
-                        .font(.caption2)
-                        .foregroundStyle(.gray)
-                        .padding(.horizontal, 16)
-                }
-                .frame(height: 350)
-                .frame(maxWidth: .infinity)
-            } else {
+            if let routine = routine {
+                    // Class exists
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
-                        Text("08:30 - 10:00")
+                        Text("\(routine.startTime) - \(routine.endTime)")
                             .font(.system(size: 20))
                             .fontWeight(.bold)
                             .foregroundStyle(.teal.opacity(0.9))
@@ -31,21 +18,15 @@ struct TClassCard: View {
                         
                         Spacer()
                         
-                        Text("1 hour 30 mins")
+                        Text(routine.duration)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                     }
                     
-                        Text("Computer Architecture and Oraganization")
-                            .font(.system(size: 20))
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white.opacity(0.9))
-                            .padding([.top, .bottom], 6)
-                            .lineLimit(1)
-                            .brightness(-0.2)
-                        
-                    
+                    OverflowingText(text: routine.courseTitle)
                     
                     HStack {
                         HStack(alignment: .center, spacing: 10) {
@@ -54,7 +35,7 @@ struct TClassCard: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            Text("61_N")
+                            Text(routine.section)
                                 .font(.system(size: 16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white.opacity(0.8))
@@ -68,8 +49,7 @@ struct TClassCard: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.gray)
                             
-                            
-                            Text("CSE333")
+                            Text(routine.courseCode)
                                 .font(.system(size: 16))
                                 .fontWeight(.bold)
                                 .foregroundStyle(.white.opacity(0.8))
@@ -82,7 +62,8 @@ struct TClassCard: View {
                             .fontWeight(.semibold)
                             .foregroundStyle(.gray)
                         
-                        Text("KT-503 (COM LAB)")
+                        Text(routine.room)
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
@@ -90,6 +71,22 @@ struct TClassCard: View {
                 }
                 .lineLimit(1)
                 .padding(15)
+                
+            } else {
+                    // Free day (empty state)
+                VStack(alignment: .center, spacing: 4) {
+                    LottieAnimation(animationName: "medi.json")
+                        .frame(maxWidth: .infinity, maxHeight: 250)
+                    Text("Looks like you've got a free day!")
+                        .foregroundStyle(.white.opacity(0.9))
+                        .padding(.horizontal, 16)
+                    Text("Take it easy and explore new opportunities!")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                        .padding(.horizontal, 16)
+                }
+                .frame(height: 350)
+                .frame(maxWidth: .infinity)
             }
         }
         .background {
@@ -101,6 +98,31 @@ struct TClassCard: View {
 }
 
 #Preview {
-    TClassCard()
-        .padding(.horizontal, 16)
+    VStack(spacing: 20) {
+            // Preview empty state
+        TClassCard(routine: nil)
+        
+            // Preview with sample data
+        TClassCard(
+            routine: TFilteredRoutine(
+                courseCode: "CSE333",
+                room: "KT-503 (COM LAB)",
+                teacher: "MJZ",
+                startTime: "08:30",
+                endTime: "10:00",
+                section: "61_N",
+                day: "Sunday",
+                courseTitle: "Computer Architecture and Organization",
+                courseCredits: 3.0,
+                teacherName: "Dr. Mohammad Jashim Uddin",
+                teacherCell: "01234567890",
+                teacherEmail: "mjz@diu.edu.bd",
+                teacherDesignation: "Professor",
+                teacherImage: "",
+                teacherRoom: "Unknown"
+            )
+        )
+    }
+    .padding(.horizontal, 16)
+    .background(.black)
 }
