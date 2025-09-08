@@ -1,72 +1,16 @@
-//import SwiftUI
-//
-//struct TExpandableSearchBar: View {
-//    @State var searchText: String = ""
-//    @Binding var isSearching: Bool
-//    @FocusState private var isTextFieldFocused: Bool
-//    
-//    var body: some View {
-//        ZStack {
-//            if isSearching {
-//                HStack(spacing: 0) {
-//                    TextField("Teacher Initial (MJZ)", text: $searchText)
-//                        .foregroundStyle(.white.opacity(0.9))
-//                        .padding(.horizontal, 24)
-//                        .focused($isTextFieldFocused)
-//                    
-//                    Spacer()
-//                }
-//                
-//            }
-//            
-//            HStack (spacing: 0) {
-//                RoundedRectangle(cornerRadius: 10)
-//                    .stroke(lineWidth: 1)
-//                    .foregroundStyle(.gray.opacity(0.65))
-//                    .frame(maxWidth: isSearching ? .infinity : 60, maxHeight: 50)
-//                    .overlay(alignment: .trailing) {
-//                        Button {
-//                            withAnimation {
-//                                isSearching.toggle()
-//                            }
-//                        } label: {
-//                            Image(systemName: "magnifyingglass")
-//                                .tint(.white)
-//                                .padding(.trailing, 20)
-//                        }
-//                    }
-//            }
-//        }
-//        .background {
-//            RoundedRectangle(cornerRadius: 10)
-//                .fill(.mainBackground)
-//        }
-//        .padding(.horizontal, 20)
-//        .padding(.bottom, 5)
-//        .animation(.easeInOut(duration: 0.4), value: isSearching)
-//        .onChange(of: isSearching) { _, newValue in
-//            if newValue {
-//                    // Small delay to ensure the animation completes before focusing
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-//                    isTextFieldFocused = true
-//                }
-//            } else {
-//                isTextFieldFocused = false
-//            }
-//        }
-//    }
-//}
-//
-//#Preview {
-//    TExpandableSearchBar(isSearching: .constant(true))
-//        .padding(.horizontal, 16)
-//}
-
-
-
-
-
 import SwiftUI
+
+    // Supporting structure for teacher suggestions
+struct TeacherSuggestion: Identifiable, Hashable {
+    let id = UUID()
+    let code: String
+    let name: String
+    let designation: String?
+    
+    var displayText: String {
+        return "\(code) - \(name)"
+    }
+}
 
 struct TExpandableSearchBar: View {
     @EnvironmentObject var manager: TeacherManager
@@ -76,53 +20,38 @@ struct TExpandableSearchBar: View {
     
         // State for suggestions
     @State private var showSuggestions: Bool = false
+    @State private var suggestions: [TeacherSuggestion] = []
+    @State private var searchTask: Task<Void, Never>?
     
-        // Computed property for teacher suggestions
-    private var teacherSuggestions: [String] {
-        guard !searchText.isEmpty else { return [] }
-        
-        let allTeachers = Set(manager.routines.compactMap { $0.teacher?.uppercased() })
-        let searchUpper = searchText.uppercased()
-        
-        let filtered = allTeachers.filter { teacher in
-            teacher.contains(searchUpper) || teacher.hasPrefix(searchUpper)
-        }
-        
-            // Sort by relevance: exact matches first, then prefix matches, then contains
-        let sorted = filtered.sorted { first, second in
-            let firstExact = first == searchUpper
-            let secondExact = second == searchUpper
-            
-            if firstExact && !secondExact { return true }
-            if !firstExact && secondExact { return false }
-            
-            let firstPrefix = first.hasPrefix(searchUpper)
-            let secondPrefix = second.hasPrefix(searchUpper)
-            
-            if firstPrefix && !secondPrefix { return true }
-            if !firstPrefix && secondPrefix { return false }
-            
-            return first < second
-        }
-        
-        return Array(sorted.prefix(10))
-    }
+        // Cache all teacher suggestions once
+    @State private var allTeacherSuggestions: [TeacherSuggestion] = []
+    @State private var hasBuiltCache = false
     
     var body: some View {
         VStack(spacing: 0) {
             if isSearching && showSuggestions {
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(teacherSuggestions, id: \.self) { suggestion in
+                        ForEach(suggestions, id: \.id) { suggestion in
                             Button {
-                                searchText = suggestion
+                                searchText = suggestion.code
                                 performSearchWithImmediateDismiss()
                             } label: {
                                 HStack {
-                                    Text(suggestion)
-                                        .foregroundColor(.white.opacity(0.9))
-                                        .font(.system(size: 16))
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(suggestion.displayText)
+                                            .foregroundColor(.white.opacity(0.9))
+                                            .font(.system(size: 16, weight: .medium))
+                                        
+                                        if let designation = suggestion.designation, !designation.isEmpty {
+                                            Text(designation)
+                                                .foregroundColor(.white.opacity(0.6))
+                                                .font(.system(size: 12))
+                                        }
+                                    }
+                                    
                                     Spacer()
+                                    
                                     Image(systemName: "arrow.down.left")
                                         .font(.caption)
                                         .foregroundColor(.gray)
@@ -133,7 +62,7 @@ struct TExpandableSearchBar: View {
                             }
                             .buttonStyle(.plain)
                             
-                            if suggestion != teacherSuggestions.last {
+                            if suggestion.id != suggestions.last?.id {
                                 Divider()
                                     .background(.gray.opacity(0.3))
                             }
@@ -141,7 +70,7 @@ struct TExpandableSearchBar: View {
                     }
                 }
                 .frame(
-                    maxHeight: min(CGFloat(teacherSuggestions.count) * 44, 160)
+                    maxHeight: min(CGFloat(suggestions.count) * 60, 180)
                 )
                 .background {
                     RoundedRectangle(cornerRadius: 10)
@@ -155,7 +84,6 @@ struct TExpandableSearchBar: View {
                 .padding(.bottom, 5)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 .zIndex(1)
-                    // Block parent tap gestures from reaching suggestions
                 .onTapGesture { }
             }
             
@@ -171,12 +99,9 @@ struct TExpandableSearchBar: View {
                                 performSearchWithImmediateDismiss()
                             }
                             .onChange(of: searchText) { _, newValue in
-                                    // Only update suggestions, no real-time search
-                                showSuggestions = !newValue.isEmpty && !teacherSuggestions.isEmpty
+                                performDebouncedSearch(query: newValue)
                             }
-                            // Prevent parent gestures from affecting text field
                             .onTapGesture {
-                                    // Force focus when tapping the text field
                                 isTextFieldFocused = true
                             }
                         
@@ -193,7 +118,6 @@ struct TExpandableSearchBar: View {
                             if isSearching {
                                 performSearchWithImmediateDismiss()
                             } else {
-                                    // Just expand the search bar
                                 withAnimation {
                                     isSearching.toggle()
                                 }
@@ -209,10 +133,7 @@ struct TExpandableSearchBar: View {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.mainBackground)
             }
-                // Block parent tap gestures from reaching the entire search bar
-            .onTapGesture {
-                    // Do nothing - this blocks the parent gesture
-            }
+            .onTapGesture { }
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 5)
@@ -224,25 +145,110 @@ struct TExpandableSearchBar: View {
                     searchText = manager.selectedTeacher
                 }
                 
-                    // Small delay to ensure the animation completes before focusing
+                    // Build cache when first opening
+                if !hasBuiltCache {
+                    buildTeacherCache()
+                }
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     isTextFieldFocused = true
                 }
             } else {
                 isTextFieldFocused = false
                 showSuggestions = false
+                searchTask?.cancel()
             }
         }
+        .onChange(of: manager.routines) { _, _ in
+                // Rebuild cache when data changes
+            hasBuiltCache = false
+        }
+    }
+    
+        // Build cache of all teacher suggestions once
+    private func buildTeacherCache() {
+        let allTeacherCodes = Set(manager.routines.compactMap { $0.teacher })
+        
+        allTeacherSuggestions = allTeacherCodes.compactMap { teacherCode in
+            let teacherModel = manager.teacher(for: teacherCode)
+            let teacherName = teacherModel?.name ?? "Unknown"
+            
+            return TeacherSuggestion(
+                code: teacherCode,
+                name: teacherName,
+                designation: teacherModel?.designation
+            )
+        }.sorted { $0.code < $1.code }
+        
+        hasBuiltCache = true
+    }
+    
+        // Debounced search with 300ms delay
+    private func performDebouncedSearch(query: String) {
+            // Cancel previous search
+        searchTask?.cancel()
+        
+            // If query is empty, hide suggestions immediately
+        guard !query.isEmpty else {
+            showSuggestions = false
+            suggestions = []
+            return
+        }
+        
+            // Start new debounced search
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms delay
+            
+                // Check if task was cancelled
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                filterSuggestions(query: query)
+            }
+        }
+    }
+    
+        // Fast filtering from cached data
+    private func filterSuggestions(query: String) {
+        let searchUpper = query.uppercased()
+        
+        let filtered = allTeacherSuggestions.filter { suggestion in
+            let codeMatches = suggestion.code.uppercased().contains(searchUpper) ||
+            suggestion.code.uppercased().hasPrefix(searchUpper)
+            let nameMatches = suggestion.name.uppercased().contains(searchUpper) ||
+            suggestion.name.uppercased().hasPrefix(searchUpper)
+            return codeMatches || nameMatches
+        }
+        
+            // Sort by relevance
+        let sorted = filtered.sorted { first, second in
+            let firstCodeExact = first.code.uppercased() == searchUpper
+            let secondCodeExact = second.code.uppercased() == searchUpper
+            
+            if firstCodeExact && !secondCodeExact { return true }
+            if !firstCodeExact && secondCodeExact { return false }
+            
+            let firstCodePrefix = first.code.uppercased().hasPrefix(searchUpper)
+            let secondCodePrefix = second.code.uppercased().hasPrefix(searchUpper)
+            
+            if firstCodePrefix && !secondCodePrefix { return true }
+            if !firstCodePrefix && secondCodePrefix { return false }
+            
+            return first.code < second.code
+        }
+        
+        suggestions = Array(sorted.prefix(10))
+        showSuggestions = !suggestions.isEmpty
     }
     
         // Immediate dismiss function
     private func performSearchWithImmediateDismiss() {
         let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard !trimmedText.isEmpty else {
-                // Don't close search if text is empty
-            return
-        }
+        guard !trimmedText.isEmpty else { return }
+        
+            // Cancel any pending search tasks
+        searchTask?.cancel()
         
             // IMMEDIATE: Dismiss keyboard and UI first
         isTextFieldFocused = false
@@ -252,7 +258,7 @@ struct TExpandableSearchBar: View {
             // Hide keyboard immediately
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         
-            // THEN: Update the manager with the search (after UI dismisses)
+            // Update the manager with the search
         let upperCaseTeacher = trimmedText.uppercased()
         manager.selectedTeacher = upperCaseTeacher
     }

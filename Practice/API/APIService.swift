@@ -17,8 +17,23 @@ enum APIServiceError: Error, LocalizedError {
     }
 }
 
+    // MARK: - Version Response Model
+struct VersionResponse: Codable {
+    let routine: String
+    let teacher: String
+    let course: String
+}
 
+    // MARK: - Updated APIService with Version Check
 class APIService {
+    
+        // MARK: - Fetch Version (Lightweight)
+    func fetchVersion() async throws -> VersionResponse {
+        guard let url = URL(string: "https://diu.zahidp.xyz/api/version") else {
+            throw APIServiceError.invalidURL
+        }
+        return try await fetch(from: url, type: VersionResponse.self)
+    }
     
         // MARK: - Fetch Routine
     func fetchRoutine() async throws -> RoutineResponse {
@@ -36,7 +51,7 @@ class APIService {
         return try await fetch(from: url, type: CourseResponse.self)
     }
     
-        // MARK: - Fetch Course
+        // MARK: - Fetch Teacher
     func fetchTeacher() async throws -> TeacherResponse {
         guard let url = URL(string: "https://diu.zahidp.xyz/api/teacher-table") else {
             throw APIServiceError.invalidURL
@@ -58,7 +73,7 @@ class APIService {
         do {
             let decoded = try JSONDecoder().decode(T.self, from: data)
             
-                // 3. Check API status if it has a "status" field
+                // 3. Check API status if it has a "status" field (not for version endpoint)
             if let apiResponse = decoded as? (any APIStatusCheck),
                apiResponse.status == "failed" {
                 throw APIServiceError.serverError(apiResponse.apiMessage ?? "No data found")
@@ -71,7 +86,7 @@ class APIService {
     }
 }
 
-    // MARK: - Protocol to handle status check
+    // MARK: - Protocol to handle status check (only for data endpoints)
 protocol APIStatusCheck {
     var status: String { get }
     var apiMessage: String? { get }
@@ -88,6 +103,3 @@ extension CourseResponse: APIStatusCheck {
 extension TeacherResponse: APIStatusCheck {
     var apiMessage: String? { message }
 }
-
-
-
