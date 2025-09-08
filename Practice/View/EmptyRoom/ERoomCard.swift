@@ -1,14 +1,13 @@
-//
-//  ERoomCard.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 24/8/25.
-//
-
 import SwiftUI
 
 struct ERoomCard: View {
-    var isEmpty: Bool = false
+    var roomName: String? = nil   // optional, nil means no room
+    var isEmpty: Bool {
+        roomName == nil
+    }
+    
+    @EnvironmentObject var emptyRoomManager: EmptyRoomManager
+    
     var body: some View {
         Group {
             if isEmpty {
@@ -24,12 +23,14 @@ struct ERoomCard: View {
                 .frame(maxWidth: .infinity)
             } else {
                 VStack(alignment: .leading) {
-                    Text("08:30 - 10:30")
-                        .font(.system(size: 16))
-                        .fontWeight(.bold)
-                        .foregroundStyle(.teal.opacity(0.9))
-                        .brightness(-0.2)
-                        .padding(.bottom, 4)
+                    if let slot = emptyRoomManager.timeSlots.first(where: { $0.start == emptyRoomManager.selectedTimeSlot }) {
+                        Text("\(slot.start) - \(slot.end)")
+                            .font(.system(size: 16))
+                            .fontWeight(.bold)
+                            .foregroundStyle(.teal.opacity(0.9))
+                            .brightness(-0.2)
+                            .padding(.bottom, 4)
+                    }
                     
                     HStack(alignment: .center) {
                         Text("Room No: ")
@@ -39,7 +40,7 @@ struct ERoomCard: View {
                             .minimumScaleFactor(0.4)
                             .brightness(-0.2)
                         
-                        Text("KT-503")
+                        Text(roomName ?? "Unknown")
                             .font(.system(size: 20))
                             .fontWeight(.bold)
                             .foregroundStyle(.white.opacity(0.9))
@@ -58,9 +59,4 @@ struct ERoomCard: View {
                 .shadow(color: .gray.opacity(0.75), radius: 2)
         }
     }
-}
-
-#Preview {
-    ERoomCard()
-    
 }

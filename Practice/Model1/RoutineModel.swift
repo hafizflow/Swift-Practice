@@ -4,8 +4,8 @@ import SwiftData
     // MARK: - API Response
 struct RoutineResponse: Codable {
     let status: String
-    let version: String?     // only present on success
-    let message: String?     // only present on failure
+    let version: String?
+    let message: String?     
     let data: [RoutineDTO]
 }
 

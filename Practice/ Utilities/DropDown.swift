@@ -218,10 +218,6 @@ struct DropdownMenu: View {
             DropdownOption(title: "Computer Science", action: { print("Show CSE details") }),
             DropdownOption(title: "Software Engineering", action: { print("Show SWE details") }),
             DropdownOption(title: "Mechanical Engineering", isDisabled: true, action: { print("Show MCT details") }),
-//            DropdownOption(title: "Electrical Engineering", action: { print("Show EEE details") }),
-//            DropdownOption(title: "Naval Engineering", isDisabled: true, action: { print("Show NFE details") }),
-//            DropdownOption(title: "Textile Engineering", action: { print("Show TE details") }),
-//            DropdownOption(title: "English Literature", isDisabled: true, action: { print("Show ENG details") })
         ])
         
         Text("Enhanced UI with smooth spring animations\nDisabled options: Mechanical, Naval, English")

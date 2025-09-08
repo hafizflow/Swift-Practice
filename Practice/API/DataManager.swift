@@ -20,6 +20,9 @@ class DataManager: ObservableObject {
     
         // MARK: - Load Routine
     func loadRoutine(context: ModelContext, existingRoutines: [RoutineModel]) async {
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             let response = try await api.fetchRoutine()
             guard response.status == "success" else { return }
@@ -49,6 +52,7 @@ class DataManager: ObservableObject {
                 isLoading = false
             } else {
                 print("Routine version unchanged: \(routineVersion)")
+                return
             }
         } catch {
             print("Error loading routine: \(error.localizedDescription)")
@@ -57,6 +61,9 @@ class DataManager: ObservableObject {
     
         // MARK: - Load Course
     func loadCourse(context: ModelContext, existingCourses: [CourseModel]) async {
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             let response = try await api.fetchCourse()
             guard response.status == "success" else { return }
@@ -83,6 +90,7 @@ class DataManager: ObservableObject {
                 isLoading = false
             } else {
                 print("Course version unchanged: \(courseVersion)")
+                return
             }
         } catch {
             print("Error loading course: \(error.localizedDescription)")
@@ -91,6 +99,9 @@ class DataManager: ObservableObject {
     
         // MARK: - Load Teacher
     func loadTeacher(context: ModelContext, existingTeachers: [TeacherModel]) async {
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             let response = try await api.fetchTeacher()
             guard response.status == "success" else { return }
@@ -117,6 +128,7 @@ class DataManager: ObservableObject {
                 isLoading = false
             } else {
                 print("Teacher version unchanged: \(teacherVersion)")
+                return
             }
         } catch {
             print("Error loading teacher: \(error.localizedDescription)")

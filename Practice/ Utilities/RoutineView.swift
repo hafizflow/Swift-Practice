@@ -17,6 +17,7 @@ struct RoutineView: View {
     
     @EnvironmentObject var studentManager: RoutineManager
     @EnvironmentObject var teacherManager: TeacherManager
+    @EnvironmentObject var emptyRoomManager: EmptyRoomManager
     
 
     var body: some View {
@@ -100,7 +101,7 @@ struct RoutineView: View {
                 case .isTeacher:
                     teacherClassesView(for: selectedDay)
                 case .isEmptyRoom:
-                    emptyRoomView()
+                    emptyRoomView(for: selectedDay)
             }
             
             Spacer().frame(height: 100)
@@ -115,13 +116,14 @@ struct RoutineView: View {
         if let routines = studentManager.filteredRoutinesWithDetails[dayKey], !routines.isEmpty {
             ForEach(routines) { routine in
                 SClassCard(routine: routine, showAlert: $showAlert)
+//                    .transition(.asymmetric(
+//                        insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
+//                        removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
+//                    ))
             }
         } else {
             SClassCard(routine: nil, showAlert: $showAlert)
-                .transition(.asymmetric(
-                    insertion: .scale(scale: 0.1).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                    removal: .scale(scale: 0.1).combined(with: .opacity).combined(with: .move(edge: .top))
-                ))
+
         }
     }
     
@@ -135,23 +137,30 @@ struct RoutineView: View {
             }
         } else {
             TClassCard(routine: nil)
-                .transition(.asymmetric(
-                    insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                    removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
-                ))
         }
     }
     
+    
     @ViewBuilder
-    private func emptyRoomView() -> some View {
-        ForEach(0..<3, id: \.self) { index in
-            ERoomCard()
-                .transition(.asymmetric(
-                    insertion: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .bottom)),
-                    removal: .scale(scale: 0.95).combined(with: .opacity).combined(with: .move(edge: .top))
-                ))
+    private func emptyRoomView(for selectedDay: Date.Day) -> some View {
+        let dayKey = selectedDay.date.string("EEE").uppercased()
+        
+        if let slot = emptyRoomManager.timeSlots.first(where: { $0.start == emptyRoomManager.selectedTimeSlot }) {
+            let emptyRoomsDict = emptyRoomManager.emptyRoomsByDay(for: slot)
+            let rooms = emptyRoomsDict[dayKey] ?? []
+            
+            if rooms.isEmpty {
+                ERoomCard(roomName: nil)
+            } else {
+                ForEach(rooms, id: \.self) { room in
+                    ERoomCard(roomName: room)
+                }
+            }
+        } else {
+            EmptyView()
         }
     }
+
     
         // MARK: - Helper Functions
     
@@ -185,4 +194,5 @@ struct RoutineView: View {
         showAlert: .constant(false)
     )
     .environmentObject(RoutineManager())
+    .environmentObject(TeacherManager())
 }

@@ -10,7 +10,7 @@ struct Teacher: View {
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
     @State private var tabType: tabType = .isTeacher
-    @State private var selectedDate: Date?
+    @State private var selectedDate: Date? = Date()
     @State private var activeTab: TeacherTab = .routine
     @State private var showAlert: Bool = false
     

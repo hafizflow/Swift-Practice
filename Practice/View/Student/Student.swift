@@ -10,7 +10,7 @@ struct Student: View {
     
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
-    @State private var selectedDate: Date?
+    @State private var selectedDate: Date? = Date()
     @State private var activeTab: StudentTab = .routine
     @State private var tabType: tabType = .isStudent
     
@@ -80,9 +80,30 @@ struct Student: View {
                         style: .continuous
                     )
                 )
-//                .ignoresSafeArea(.all, edges: .bottom)
-                
-            } else if hasSearched && !hasData {
+            }
+            else if routineManager.isLoading {
+                VStack(spacing: 30) {
+                    ProgressView("")
+                        .progressViewStyle(CircularProgressViewStyle(tint: .teal))
+                        .scaleEffect(2.3)
+                    
+                    Text("Searching section '\(routineManager.selectedSection)'")
+                        .foregroundStyle(.gray)
+                        .font(.system(size: 18))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.testBg)
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: 30,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 30,
+                        style: .continuous
+                    )
+                )
+            }
+            else if hasSearched && !hasData {
                     // No results found for searched section
                 VStack(spacing: 20) {
                     LottieAnimation(animationName: "yogi.json")

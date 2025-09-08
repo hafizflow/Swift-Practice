@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-    // MARK: - Routine Manager with Caching
+    // MARK: - Routine Manager with Caching and Persistence
 @MainActor
 class RoutineManager: ObservableObject {
+    @Published var isLoading: Bool = false
     @Published var routines: [RoutineModel] = [] {
         didSet { invalidateCache() }
     }
@@ -17,9 +18,58 @@ class RoutineManager: ObservableObject {
     @Published var selectedSection: String = "" {
         didSet {
             if selectedSection != oldValue {
+                    // ✅ Start loading while routines recalc for new section
+                isLoading = true
+                
+                if isValidSection(selectedSection) {
+                    saveLastValidSection(selectedSection)
+                }
                 invalidateCache()
+                
+                    // ✅ Stop loading when cache refresh finishes on main actor
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
             }
         }
+    }
+    
+        // MARK: - Persistence
+    private let lastSectionKey = "lastValidSelectedSection"
+    
+    init() {
+            // Load the last valid section when the manager is created
+        loadLastValidSection()
+    }
+    
+    private func saveLastValidSection(_ section: String) {
+        let trimmed = section.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            UserDefaults.standard.set(trimmed, forKey: lastSectionKey)
+        }
+    }
+    
+    private func loadLastValidSection() {
+        if let savedSection = UserDefaults.standard.string(forKey: lastSectionKey),
+           !savedSection.isEmpty {
+            selectedSection = savedSection
+        }
+    }
+    
+    private func isValidSection(_ section: String) -> Bool {
+        let trimmed = section.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard !trimmed.isEmpty else { return false }
+        
+        let validSections = [trimmed, "\(trimmed)1", "\(trimmed)2"]
+        return routines.contains { routine in
+            guard let routineSection = routine.section?.uppercased() else { return false }
+            return validSections.contains(routineSection)
+        }
+    }
+    
+        // MARK: - Public method to clear saved section
+    func clearSavedSection() {
+        UserDefaults.standard.removeObject(forKey: lastSectionKey)
     }
     
         // MARK: - Cached Properties

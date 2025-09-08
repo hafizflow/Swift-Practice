@@ -47,6 +47,7 @@ struct SCustomDismissibleAlert: View {
                             .foregroundStyle(.gray)
                         
                         Text(manager.contact.designation)
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
@@ -60,6 +61,7 @@ struct SCustomDismissibleAlert: View {
                             .foregroundStyle(.gray)
                         
                         Link(manager.contact.phone, destination: URL(string: "tel:\(manager.contact.phone)")!)
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.teal.opacity(0.8))
@@ -85,6 +87,7 @@ struct SCustomDismissibleAlert: View {
                             .foregroundStyle(.gray)
                         
                         Text(AttributedString(stringLiteral: manager.contact.email))
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))
@@ -111,6 +114,7 @@ struct SCustomDismissibleAlert: View {
                             .foregroundStyle(.gray)
                         
                         Text(manager.contact.room)
+                            .lineLimit(1)
                             .font(.system(size: 16))
                             .fontWeight(.semibold)
                             .foregroundStyle(.white.opacity(0.8))

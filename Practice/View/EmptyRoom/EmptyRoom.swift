@@ -1,9 +1,3 @@
-//
-//  EmptyRoom.swift
-//  Practice
-//
-//  Created by Hafizur Rahman on 24/8/25.
-//
 
 import SwiftUI
 
@@ -11,7 +5,7 @@ struct EmptyRoom: View {
     @Binding var isSearching: Bool
         // View Properties
     @State private var currentWeek: [Date.Day] = Date.currentWeek
-    @State private var selectedDate: Date?
+    @State private var selectedDate: Date? = Date()
         // For Matched Geometry Effect
     @Namespace private var namespace
     @State private var activeTab: StudentTab = .routine
@@ -31,11 +25,11 @@ struct EmptyRoom: View {
                 currentWeek: $currentWeek,
                 selectedDate: $selectedDate,
                 showAlert: $showAlert)
-                    .onAppear {
-                            // Setting up initial Selection Date
-                        guard selectedDate == nil else { return }
-                            // Today's Data
-                        selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
+            .onAppear {
+                    // Setting up initial Selection Date
+                guard selectedDate == nil else { return }
+                    // Today's Data
+                selectedDate = currentWeek.first(where: { $0.date.isSame(.now)})?.date
             }
             .overlay(alignment: .bottomTrailing) {
                 ZStack(alignment: .bottomTrailing) {
@@ -133,4 +127,26 @@ struct EmptyRoom: View {
 
 #Preview {
     EmptyRoom(isSearching: .constant(false))
+}
+
+
+
+    // MARK: - Time Change Button using existing DropdownMenu
+struct TimeChangeButton: View {
+    @EnvironmentObject var timeManager: EmptyRoomManager
+    
+    var body: some View {
+        DropdownMenu(
+            dropdownAlignment: .trailing,
+            fromTop: true,
+            options: timeManager.timeSlotsForPicker.map { slot in
+                DropdownOption(
+                    title: slot,
+                    action: {
+                        timeManager.updateTimeSlot(slot)
+                    }
+                )
+            }
+        )
+    }
 }
